@@ -1,4 +1,11 @@
-Sun Feb  9 12:12:42 2003  Jarkko Hietaniemi  <jhi@ovipunen.hut.fi>
+Tue Oct  7 21:54:04 2003  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Makefile.PL: use archlibexp instead of archlib in cc -I.../CORE
+	  so that Perls installed under ~user work.
+
+	* Release 1.23.
+
+Sun Feb  9 12:12:42 2003  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Add RLIMIT_LOCKS.
 

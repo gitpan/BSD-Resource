@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995-2002 Jarkko Hietaniemi. All rights reserved.
+ * Copyright (c) 1995-2003 Jarkko Hietaniemi. All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the same terms as Perl itself.
  *

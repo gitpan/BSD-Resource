@@ -53,7 +53,7 @@ sub try_compile_and_link {
 		$cc = basename($b) . $s . $r;
 	    }
 	    $cccmd =
-		"$cc -c -o $tmp.o -I$Config{'archlib'}/CORE $Config{'ccflags'}";
+		"$cc -c -o $tmp.o -I$Config{'archlibexp'}/CORE $Config{'ccflags'}";
 	    $cccmd .= " 2>/dev/null" unless $ENV{VERBOSE};
 	    print STDERR "[cccmd = $cccmd]\n" if $ENV{VERBOSE};
 	    if (system("$cccmd $tmp.c") == 0) {

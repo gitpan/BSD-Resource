@@ -11,3 +11,4 @@ t/times.t
 README
 ChangeLog
 INSTALL
+META.yml                                 Module meta-data (added by MakeMaker)
