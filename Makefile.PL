@@ -7,11 +7,17 @@
 
 require 5.002;
 
+use vars qw($PACKAGE $DEFINE $LIBS);
+
 $PACKAGE = 'BSD::Resource';
 
 use Config;
 use ExtUtils::MakeMaker;
 use File::Basename;
+
+$| = 1;
+
+my $CC;
 
 sub try_compile_and_link {
     my ($c, %opt) = @_;
@@ -20,21 +26,46 @@ sub try_compile_and_link {
     my ($tmp) = "tmp$$";
     local(*TMPC);
 
+    my $cccmd;
+
     unlink("$tmp.c", "$tmp.o");
 
     if (open(TMPC, ">$tmp.c")) {
 	print TMPC $c;
 	close(TMPC);
-	my $cc = exists $ENV{CC} ? $ENV{CC} : $Config{'cc'};
-	$cc = basename($cc) unless -x $cc;
-	my $cccmd = "$cc -c -o $tmp.o $Config{'ccflags'} $tmp.c 2>/dev/null";
-	if (system($cccmd) == 0) {
-	    $ok = -s "$tmp.o";
+	my @cc;
+	if ($CC) {
+	    push @cc, $CC;
+	} else {
+	    if (exists $ENV{CC}) {
+		push @cc, $ENV{CC};
+		print STDERR "(trying first the CC from your environment)\n";
+	    }
+	    push @cc, $Config{'cc'};
 	}
-	unlink("$tmp.c", "$tmp.o");
+	while (my $cc = shift @cc) {
+	    unless (-x $cc) {
+		# They might have a different compiler
+		# than what Perl was compiled with (easy
+		# if using gcc), or their $cc has more
+		# than just the compiler name (say, options)
+		my ($b, $s, $r) = ($cc =~ /^(\S+)(\s*)(.*)/);
+		$cc = basename($b) . $s . $r;
+	    }
+	    $cccmd =
+		"$cc -c -o $tmp.o -I$Config{'installarchlib'}/CORE $Config{'ccflags'}";
+	    $cccmd .= "2>/dev/null" unless $ENV{VERBOSE};
+	    print STDERR "[cccmd = $cccmd]\n" if $ENV{VERBOSE};
+	    if (system("$cccmd $tmp.c") == 0) {
+		$ok = -s "$tmp.o";
+		$CC = $cc;
+	    }
+	    unlink("$tmp.c", "$tmp.o");
+	    last if $ok;
+	}
     }
     
-    $ok;
+    return $ok;
 }
 
 # This is unused for now.
@@ -67,27 +98,35 @@ sub try_cpp_and_grep {
 }
 
 sub has_resource_h () {
-    return 1 if
-    try_compile_and_link(<<EOM);
+    print "Checking that you have certain header files...\n";
+    if (try_compile_and_link(<<EOM)) {
 #include <sys/resource.h>
 static int foo;
 EOM
+    print "You do have <sys/resource.h>.  Excellent.\n";
+    return 1;
+}
+    
 
-    return 2 if
-    try_compile_and_link(<<EOM);
+    if (try_compile_and_link(<<EOM)) {
 #include <sys/types.h>
 #include <sys/time.h> 
 #include <sys/resource.h>
 static int foo;
 EOM
-
+    print "You have <sys/resource.h> but you want some extra headers.  That's okay.\n";
+    return 2;
+}
+    
     # Solaris 1 weirdo header
 
-    return 3 if
-    try_compile_and_link(<<EOM);
+    if (try_compile_and_link(<<EOM)) {
 #include <sys/rusage.h>
 static int foo;
 EOM
+    print "You have <sys/rusage.h>.  Are you an old Solaris?.\n";
+    return 3;
+}
 
     return 0;
 }
@@ -113,10 +152,10 @@ EOM
 }
 
 sub find_Rlim_t {
-	my ($tmp) = "rlim$$";
-	my ($worrynot) = 0;
+	my $tmp      = "rlim$$";
+	my $not      = 0;
 
-	print "You seem ";
+	print "Checking to see whether you have rlim_t...\n";
 	my $has = try_compile_and_link(<<EOM);
 #include "EXTERN.h"
 #include "perl.h"
@@ -131,11 +170,13 @@ EOM
 	    $DEFINE .= ' -DRlim_t=rlim_t';
 	} else {
 	    print "not ";
-	    $worrynot = 1;
+	    $not = 1;
 	}
 
+	print "You seem ";
+	print "not " if $not;
 	print "to have rlim_t defined (";
-	print $worrynot ? "this is okay" : "which is nice";
+	print $not ? "this is okay" : "which is nice";
 	print ").\n\n";
 }
 
