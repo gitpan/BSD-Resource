@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1995-2003 Jarkko Hietaniemi. All rights reserved.
+# Copyright (c) 1995-2004 Jarkko Hietaniemi. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 use Carp;
 use AutoLoader;
@@ -220,24 +220,7 @@ please consult your usual C programming documentation about
 getrusage() and also the header file C<E<lt>sys/resource.hE<gt>>.
 (In B<Solaris>, this might be C<E<lt>sys/rusage.hE<gt>>).
 
-Note 1: officially B<HP-UX> does not support getrusage() at all but for
-the time being, it does seem to.
-
-Note 2: Because not all kernels are BSD and also because of the sloppy
-support of getrusage() by many vendors many of the values may not be
-updated.
-
-For example B<Solaris 1> claims in C<E<lt>sys/rusage.hE<gt>> that the
-C<ixrss> and the C<isrss> fields are always zero.
-
-In B<SunOS 5.5 and 5.6> the getrusage() leaves most of the fiels zero
-and therefore getrusage() is not even used, instead of that the
-B</proc> interface is used.  The mapping is not perfect: the maxrss
-field is really the B<current> resident size instead of the maximum,
-the idrss is really the B<current> heap size instead of the integral
-data, the isrss is really the B<current> stack size instead of the
-integral stack.  The ixrss has no sensible counterpart at all so it
-stays zero.
+See also L</"KNOWN ISSUES">.
 
 =head2 getrlimit
 
@@ -346,11 +329,6 @@ Usual values for C<PRIO_MIN>, C<PRIO_MAX>, are -20, 20. A negative
 value means better priority (more impolite process), a positive value
 means worse priority (more polite process).
 
-B<NOTE>: in B<AIX> if the BSD compatibility library is not installed or
-not found by the installation procedure of the BSD::Resource the
-C<PRIO_MIN> is 0 (corresponding to -20) and C<PRIO_MAX> is 39 (corresponding
-to 19, the BSD priority 20 is unreachable).
-
 =head2 setrlimit
 
 	$success = setrlimit($resource, $newsoft, $newhard);
@@ -390,6 +368,8 @@ A normal user process can only lower its priority (make it more positive).
 
 B<NOTE>: A successful call returns C<1>, a failed one C<0>.
 
+See also L</"KNOWN ISSUES">.
+
 =head2 times
 
 	use BSD::Resource qw(times);
@@ -407,9 +387,9 @@ operation is not `atomic': the times for the children are recorded
 a little bit later.
 
 B<NOTE>: times() is not imported by default by BSD::Resource.
-  You need to tell that you want to use it.
+You need to tell that you want to use it.
 
-B<NOTE: This is not a real BSD function.>
+B<NOTE: times() is not a "real BSD" function.  It is older UNIX.>
 
 =head2 get_rlimits
 
@@ -470,9 +450,38 @@ for the constants.
 
 	$currprio = getpriority();
 
+=head1 KNOWN ISSUES
+
+In B<AIX> if the BSD compatibility library is not installed or not
+found by the BSD::Resource installation procedure and when using the
+getpriority() or setpriority(), the C<PRIO_MIN> is 0 (corresponding
+to -20) and C<PRIO_MAX> is 39 (corresponding to 19, the BSD priority
+20 is unreachable).
+
+In B<HP-UX> the getrusage() is not Officially Supported at all but for
+the time being, it does seem to be.
+
+In Mac OS X 10.3.2 (and probably earlier) the t/setrlimit.t subtest #8
+will fail because of bug(s?) in the setrlimit/getrlimit functionality,
+setting/getting resource limits on the maximum number of processes
+(RLIM_NPROC) behaves nonsensically.  The bug has been reported to Apple.
+
+Because not all UNIX kernels are BSD and also because of the sloppy
+support of getrusage() by many vendors many of the getrusage() values
+may not be correctly updated.  For example B<Solaris 1> claims in
+C<E<lt>sys/rusage.hE<gt>> that the C<ixrss> and the C<isrss> fields
+are always zero.  In B<SunOS 5.5 and 5.6> the getrusage() leaves most
+of the fiels zero and therefore getrusage() is not even used, instead
+of that the B</proc> interface is used.  The mapping is not perfect:
+the maxrss field is really the B<current> resident size instead of the
+maximum, the idrss is really the B<current> heap size instead of the
+integral data, and the isrss is really the B<current> stack size
+instead of the integral stack.  The ixrss has no sensible counterpart
+at all so it stays zero.
+
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1996-2003 Jarkko Hietaniemi All Rights Reserved
+Copyright 1995-2004 Jarkko Hietaniemi All Rights Reserved
 
 This library is free software; you may redistribute it and/or modify
 it under the same terms as Perl itself.

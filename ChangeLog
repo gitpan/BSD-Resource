@@ -1,3 +1,12 @@
+Sun Feb 29 16:51:34 2004  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* No functional changes but document the known fact that
+	  under at least Mac OS X 10.3.2 the t/setrlimit.t subtest #8
+	  may fail because of an OS bug.  Also reorder the documentation
+	  a bit to collect all the known issues under one heading.
+	
+	* Release 1.24.
+
 Tue Oct  7 21:54:04 2003  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Makefile.PL: use archlibexp instead of archlib in cc -I.../CORE
