@@ -1,3 +1,14 @@
+Tue Nov 26 04:20:38 2002  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Add a warning about the time/load-sensitivity of the
+	  tests to INSTALL and Makefile.PL.
+
+	* Rewrite the getrusage.t and times.t tests a bit to
+	  better work on a fast machine (IOW, try spending a
+	  bit more time).
+
+	* Release 1.20.
+
 Fri Nov 22 17:57:44 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Fixed a test problem found by Alain Barbet: in NetBSD

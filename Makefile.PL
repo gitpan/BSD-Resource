@@ -205,6 +205,7 @@ print  <<EOM;
 Done configuring $PACKAGE.
 
 Now you may issue 'make'.  Do not forget also 'make test'.
+If some tests fail, please rerun the tests (see INSTALL).
 
 EOM
 }

@@ -8,7 +8,12 @@ To compile
 	make
 	make test
 
-and to install
+Note that some of the tests (especially getrusage.t and times.t) are
+sensitive to timing, and therefore sensitive to the overall load of
+the testing machine.  If you get failures, wait for less busy moment
+and rerun the tests few times.
+
+To install
 
 	make install
 

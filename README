@@ -20,12 +20,11 @@ with better time resolution.
 
 To install read the INSTALL.
 
-Documentation in pod format in Resource.pm.
+Documentation is available in pod format in Resource.pm.
 
 -- 
 Jarkko Hietaniemi <jhi@iki.fi>
-1998-Jan-20
-
+2002-11-15
 ---------------
 
 NOTE 0: Perl 5 is required. Also is required the same C compilation
