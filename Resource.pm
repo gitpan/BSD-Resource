@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 use Carp;
 use AutoLoader;
@@ -473,6 +473,7 @@ sub stime    { _g($_[0], 'stime'   ) }
 sub maxrss   { _g($_[0], 'maxrss'  ) }
 sub ixrss    { _g($_[0], 'ixrss'   ) }
 sub idrss    { _g($_[0], 'idrss'   ) }
+sub isrss    { _g($_[0], 'isrss'   ) }
 sub minflt   { _g($_[0], 'minflt'  ) }
 sub majflt   { _g($_[0], 'majflt'  ) }
 sub nswap    { _g($_[0], 'nswap'   ) }

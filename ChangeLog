@@ -1,3 +1,11 @@
+Fri Sep 28 05:35:16 2001  Jarkko Hietaniemi  <jhi@gamma.hut.fi>
+
+	* Release 1.11.
+
+	* I suck.  Vivek Khera reported NINE MONTHS ago that
+	  I was missing sub isrss().  My memory was jogged by
+	  a message from Jeff Boes ONE MONTH ago.  My apologies.
+
 Mon Mar  5 16:43:44 2001  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
 
 	* Release 1.10.
