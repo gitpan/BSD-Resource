@@ -2,6 +2,22 @@
 # PLATFORMS
 #	
 
+XXX XXX XX XX:XX:XX 1997  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Release 1.05_01:
+
+	  More platforms known to work
+
+		  MachTen 4.0.3		1)
+
+	  Many thanks to
+
+	   	Dominic Dunlop		<domo@slipper.ip.lu>
+
+
+	1) well, setrlimit() does not, at all, but this is
+	   a known bug in MachTen, Perl canna fix it...
+
 Tue Apr 08 01:27:33 1997  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Release 1.05:

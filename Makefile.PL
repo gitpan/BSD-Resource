@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.PL,v 1.1 1997/04/07 22:30:27 jhi Exp jhi $
+# Makefile.PL
 #
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
@@ -7,7 +7,7 @@
 
 require 5.001;
 
-$VERSION = '1.05';
+$VERSION = '1.05_01';
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -53,6 +53,7 @@ EOM
 
     return 1 if
     try_compile_and_link(<<EOM);
+#include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 static int foo;
@@ -60,6 +61,7 @@ EOM
 
     return 1 if
     try_compile_and_link(<<EOM);
+/* Solaris 1, any others? */
 #include <sys/rusage.h>
 static int foo;
 EOM
@@ -70,13 +72,13 @@ EOM
 sub init {
     die <<EOM unless has_resource_h();
 Your operating system does not seem to have
-<sys/resource.h> or <sys/rusage.h>.
+<sys/resource.h> or <sys/rusage.h>?
 
 There is no way BSD::Resource is going to work.
 
 I am awfully sorry but I cannot go further.
 
-Aborting configuration of BSD::Resource 1.05.
+Aborting configuration of BSD::Resource $VERSION.
 EOM
 
     $DEFINE = '';
