@@ -7,7 +7,8 @@
 
 require 5.001;
 
-$VERSION = '1.05_01';
+$PACKAGE = 'BSD::Resource';
+$VERSION = '1.05_02';
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -74,11 +75,11 @@ sub init {
 Your operating system does not seem to have
 <sys/resource.h> or <sys/rusage.h>?
 
-There is no way BSD::Resource is going to work.
+There is no way $PACKAGE is going to work.
 
 I am awfully sorry but I cannot go further.
 
-Aborting configuration of BSD::Resource $VERSION.
+Aborting configuration of $PACKAGE $VERSION.
 EOM
 
     $DEFINE = '';
@@ -125,7 +126,7 @@ Note: it is ok if none of the libraries '@$LIBS' is found.
 
 EOM
     WriteMakefile(
-    'NAME'	=> 'BSD::Resource',
+    'NAME'	=> $PACKAGE,
     'VERSION'	=> $VERSION,
     'LIBS'	=> $LIBS,
     'DEFINE'	=> $DEFINE,
@@ -136,7 +137,7 @@ EOM
 sub main {
     print <<EOM;
 
-Configuring BSD::Resource $VERSION...
+Configuring $PACKAGE $VERSION...
 
 EOM
 
@@ -156,7 +157,7 @@ EOM
     }
 print  <<EOM;
 
-Done configuring BSD::Resource $VERSION.
+Done configuring $PACKAGE $VERSION.
 
 Now you may issue 'make'. Do not forget also 'make test'.
 
