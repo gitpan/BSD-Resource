@@ -306,6 +306,12 @@ int arg;
 #else
 		goto not_there;
 #endif
+	    if (strEQ(name, "RLIMIT_LOCKS"))
+#if defined(RLIMIT_LOCKS) || defined(HAS_RLIMIT_LOCKS)
+		return RLIMIT_LOCKS;
+#else
+		goto not_there;
+#endif
 	    if (strEQ(name, "RLIMIT_MEMLOCK"))
 #if defined(RLIMIT_MEMLOCK) || defined(HAS_RLIMIT_MEMLOCK)
 		return RLIMIT_MEMLOCK;
@@ -667,6 +673,9 @@ _get_rlimits()
 #endif
 #if defined(RLIMIT_FSIZE) || defined(HAS_RLIMIT_FSIZE)
 	hv_store(RETVAL, "RLIMIT_FSIZE"    , 12, newSViv(RLIMIT_FSIZE),    0);
+#endif
+#if defined(RLIMIT_LOCKS) || defined(HAS_RLIMIT_LOCKS)
+	hv_store(RETVAL, "RLIMIT_LOCKS"    , 12, newSViv(RLIMIT_LOCKS),    0);
 #endif
 #if defined(RLIMIT_MEMLOCK) || defined(HAS_RLIMIT_MEMLOCK)
 	hv_store(RETVAL, "RLIMIT_MEMLOCK"  , 14, newSViv(RLIMIT_MEMLOCK),  0);

@@ -1,3 +1,13 @@
+Sun Feb  9 12:12:42 2003  Jarkko Hietaniemi  <jhi@ovipunen.hut.fi>
+
+	* Add RLIMIT_LOCKS.
+
+	* Fix a typo s/RLIM_SAVEWD_MAX/RLIMIT_SAVED_MAX/
+	
+	* Sort the @EXPORT list.
+	
+	* Release 1.22.
+
 Thu Dec 12 01:15:44 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Patches for NCR MP-RAS from grommel@sears.com.
@@ -18,7 +28,7 @@ Tue Nov 26 04:20:38 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 Fri Nov 22 17:57:44 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Fixed a test problem found by Alain Barbet: in NetBSD
-	  the RLIM_STACK wants to be aligned.  Fixed also the
+	  the RLIMIT_STACK wants to be aligned.  Fixed also the
 	  other memory-related limit tests to allow for alignment.
 
 	* Release 1.19.

@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.21';
+$VERSION = '1.22';
 
 use Carp;
 use AutoLoader;
@@ -24,20 +24,42 @@ require DynaLoader;
 @ISA = qw(Exporter DynaLoader);
 
 @EXPORT = qw(
-	     PRIO_MIN PRIO_MAX PRIO_USER PRIO_PGRP PRIO_PROCESS
-	     getpriority setpriority
-	     RLIMIT_CPU RLIMIT_FSIZE RLIMIT_DATA
-	     RLIMIT_NOFILE RLIMIT_OPEN_MAX RLIMIT_OFILE
-	     RLIMIT_AS RLIMIT_VMEM
-	     RLIMIT_STACK RLIMIT_CORE RLIMIT_RSS
-	     RLIMIT_MEMLOCK RLIMIT_NPROC
-	     RLIMIT_AIO_MEM RLIMIT_AIO_OPS
+	     PRIO_MAX
+	     PRIO_MIN
+	     PRIO_PGRP
+	     PRIO_PROCESS
+	     PRIO_USER
+	     RLIMIT_AIO_MEM
+	     RLIMIT_AIO_OPS
+	     RLIMIT_AS
+	     RLIMIT_CORE
+	     RLIMIT_CPU
+	     RLIMIT_DATA
+	     RLIMIT_FSIZE
+	     RLIMIT_LOCKS
+	     RLIMIT_MEMLOCK
+	     RLIMIT_NOFILE
+	     RLIMIT_NPROC
+	     RLIMIT_OFILE
+	     RLIMIT_OPEN_MAX
+	     RLIMIT_RSS
+	     RLIMIT_STACK
 	     RLIMIT_TCACHE
-	     RLIM_NLIMITS RLIM_INFINITY RLIM_SAVED_CUR RLIM_SAVEWD_MAX
-	     getrlimit setrlimit
-	     RUSAGE_BOTH RUSAGE_SELF RUSAGE_CHILDREN RUSAGE_THREAD
-	     getrusage	
+	     RLIMIT_VMEM
+	     RLIM_INFINITY
+	     RLIM_NLIMITS
+	     RLIM_SAVED_CUR
+	     RLIM_SAVED_MAX
+	     RUSAGE_BOTH
+	     RUSAGE_CHILDREN
+	     RUSAGE_SELF
+	     RUSAGE_THREAD
 	     get_rlimits
+	     getpriority
+	     getrlimit
+	     getrusage	
+	     setpriority
+	     setrlimit
 );
 
 Exporter::export_tags();
@@ -225,34 +247,36 @@ stays zero.
 
 The $resource argument can be one of
 
-	$resource		usual meaning		usual unit
+        $resource               usual meaning           usual unit
 
-	RLIMIT_CPU		CPU time		seconds
+        RLIMIT_CPU              CPU time                seconds
 
-        RLIMIT_FSIZE		file size		bytes
+        RLIMIT_FSIZE            file size               bytes
 
-	RLIMIT_DATA		data size		bytes
-        RLIMIT_STACK		stack size		bytes
-        RLIMIT_CORE		coredump size		bytes
-        RLIMIT_RSS		resident set size	bytes
-    	RLIMIT_MEMLOCK		memory locked data size	bytes
+        RLIMIT_DATA             data size               bytes
+        RLIMIT_STACK            stack size              bytes
+        RLIMIT_CORE             coredump size           bytes
+        RLIMIT_RSS              resident set size       bytes
+        RLIMIT_MEMLOCK          memory locked data size bytes
 
-        RLIMIT_NPROC		number of processes	1
+        RLIMIT_NPROC            number of processes     1
 
-	RLIMIT_NOFILE		number of open files	1
-	RLIMIT_OFILE		number of open files	1
-        RLIMIT_OPEN_MAX		number of open files	1
+        RLIMIT_NOFILE           number of open files    1
+        RLIMIT_OFILE            number of open files    1
+        RLIMIT_OPEN_MAX         number of open files    1
 
-	RLIMIT_AS		(virtual) address space	bytes
-        RLIMIT_VMEM		virtual memory (space)	bytes
+        RLIMIT_LOCKS            number of file locks    1
 
-	RLIMIT_TCACHE		maximum number of	1
-				cached threads
+        RLIMIT_AS               (virtual) address space bytes
+        RLIMIT_VMEM             virtual memory (space)  bytes
 
-	RLIMIT_AIO_MEM		maximum memory locked	bytes
-				for POSIX AIO
-	RLIMIT_AIO_OPS		maximum number		1
-				for POSIX AIO ops
+        RLIMIT_TCACHE           maximum number of       1
+                                cached threads
+
+        RLIMIT_AIO_MEM          maximum memory locked   bytes
+                                for POSIX AIO
+        RLIMIT_AIO_OPS          maximum number          1
+                                for POSIX AIO ops
 
 B<What limits are available depends on the operating system>.
 See below for C<get_rlimits()> on how to find out which limits are
@@ -448,7 +472,7 @@ for the constants.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1996-2002 Jarkko Hietaniemi All Rights Reserved
+Copyright 1996-2003 Jarkko Hietaniemi All Rights Reserved
 
 This library is free software; you may redistribute it and/or modify
 it under the same terms as Perl itself.
