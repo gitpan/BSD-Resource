@@ -1,17 +1,166 @@
-require 5.001;
-
-use ExtUtils::MakeMaker;
-# $Id: Makefile.PL,v 1.4 1996/02/17 14:14:33 jhi Exp $
-# Time-stamp:	<96/02/17 15:59:52 jhi>
+#
+# $Id: Makefile.PL,v 1.1 1997/04/07 22:30:27 jhi Exp jhi $
+#
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
+#
 
-# The Solaris -L/usr/ucblib and -I/usr/ucbinclude just break things.
+require 5.001;
 
-WriteMakefile(
+$VERSION = '1.05';
+
+use Config;
+use ExtUtils::MakeMaker;
+
+sub TMPDIR {
+    my $TMPDIR =
+	(grep(defined $_ && -d $_ && -w $_,
+	      ((defined $ENV{'TMPDIR'} ? $ENV{'TMPDIR'} : undef),
+	       qw(/var/tmp /usr/tmp /tmp))))[0]
+		   unless defined $TMPDIR;
+    $TMPDIR || die "Cannot find writable temporary directory.\n";
+}
+
+sub try_compile_and_link {
+    my ($c, $cccmd) = @_;
+
+    my ($ok) = 0;
+    my ($tmp) = TMPDIR . '/' . "tmp$$";
+    local(*TMPC);
+
+    unlink("$tmp.c", "$tmp.o");
+
+    if (open(TMPC, ">$tmp.c")) {
+	print TMPC $c;
+	close(TMPC);
+	$cccmd =
+	    "$Config{'cc'} -c -o $tmp.o $Config{'ccflags'} $tmp.c 2>/dev/null"
+		unless (defined $cccmd);
+	system($cccmd);
+	$ok = -s "$tmp.o";
+	unlink("$tmp.c", "$tmp.o");
+    }
+    
+    $ok;
+}
+
+sub has_resource_h () {
+    return 1 if
+    try_compile_and_link(<<EOM);
+#include <sys/resource.h>
+static int foo;
+EOM
+
+    return 1 if
+    try_compile_and_link(<<EOM);
+#include <sys/time.h>
+#include <sys/resource.h>
+static int foo;
+EOM
+
+    return 1 if
+    try_compile_and_link(<<EOM);
+#include <sys/rusage.h>
+static int foo;
+EOM
+
+    return 0;
+}
+
+sub init {
+    die <<EOM unless has_resource_h();
+Your operating system does not seem to have
+<sys/resource.h> or <sys/rusage.h>.
+
+There is no way BSD::Resource is going to work.
+
+I am awfully sorry but I cannot go further.
+
+Aborting configuration of BSD::Resource 1.05.
+EOM
+
+    $DEFINE = '';
+
+    # old Solarises had this oddity.
+    $DEFINE .= ' -DI_SYS_RUSAGE' if (-r '/usr/include/sys/rusage.h');
+
+    # ucb is poison for Solaris.
+    $LIBS = $Config{'osname'} eq 'solaris' ? [''] : ['-lucb -lbsd'];
+}
+
+sub find_Rlim_t {
+	my ($tmp) = $TMPDIR . '/' . "rlim$$";
+	my ($worrynot) = 0;
+
+	print "You seem ";
+	my $has = try_compile_and_link(<<EOM);
+#ifdef I_SYS_TYPES
+#include <sys/types.h>
+#endif
+#include <sys/resource.h>
+static rlim_t foo = 0;
+EOM
+        if ($has) {
+	    $DEFINE .= ' -DRlim_t=rlim_t';
+	} else {
+	    print "not ";
+	    $worrynot = 1;
+	}
+
+	print "to have rlim_t defined. (";
+	print $worrynot ? "this is ok" : "which is nice";
+	print ")\n\n";
+}
+
+sub configure {
+    find_Rlim_t;
+}
+
+sub doMakefile {
+    print  <<EOM if ($$LIBS[0] ne '');
+Looking for libraries...
+Note: it is ok if none of the libraries '@$LIBS' is found.
+
+EOM
+    WriteMakefile(
     'NAME'	=> 'BSD::Resource',
-    'VERSION'	=> '1.03',
-    'LIBS'	=> ['-lucb -lbsd'],
-    'DEFINE'	=> '',
-    'INC'	=> ''
+    'VERSION'	=> $VERSION,
+    'LIBS'	=> $LIBS,
+    'DEFINE'	=> $DEFINE,
+# do not even think about 'INC' => '-I/usr/ucbinclude', Solaris will avenge.
 );
+}
+
+sub main {
+    print <<EOM;
+
+Configuring BSD::Resource $VERSION...
+
+EOM
+
+    init;
+    configure;
+    doMakefile;
+    if ($] > 5.001 &&
+	(! -e 'Resource.c' || -M 'Resource.xs' < -M 'Resource.c' )) {
+print  <<EOM;
+
+Note: you may safely ignore the possible message:
+
+	Please specify prototyping behavior for Resource.xs (see perlxs manual)
+
+It is nothing serious.
+EOM
+    }
+print  <<EOM;
+
+Done configuring BSD::Resource $VERSION.
+
+Now you may issue 'make'. Do not forget also 'make test'.
+
+EOM
+}
+
+&main;
+
+# EOF

@@ -1,5 +1,6 @@
-# $Id: README,v 1.3 1995/12/18 10:12:25 jhi Exp $
-# Time-stamp:	<95/12/18 12:12:14 jhi>
+#
+# README
+#
 
 This Perl extension implements the BSD process resource limit functions
 
@@ -9,52 +10,36 @@ and the BSD process priority functions.
 
 	getpriority()	setpriority()
 
-NOTE 1: Perl 5 is required.
+To install read the INSTALL.
 
-NOTE 2: if your operating system does not support these BSD functions,
+Documentation in pod format in Resource.pm.
+
+-- 
+Jarkko Hietaniemi <jhi@iki.fi>
+1997-Apr-08
+
+---------------
+
+NOTE 0: Perl 5 is required. Also is required the same C compilation
+environment that was used to compile that Perl 5.
+
+NOTE 1: If your operating system does not support these BSD functions,
 Perl cannot help. In detailed terms: you _must_ have the C header file
-<sys/resource.h>. If you do not, this package is of little use to you.
+<sys/resource.h> *). If you do not, this package is of little use to you.
 
-NOTE 3: The header file alone is not enough: you must have library
+NOTE 2: The header file alone is not enough: you must have library
 support also. The C compiler include paths (-I...) and library paths
 (-L...) and the attempted libraries (-l...) are listed in Makefile.PL.
 
-NOTE 4: More caveats (vendors sloppy support for these things, et. al.)
-        in the Resource.pm inlined pod doc.
+NOTE 3: You cannot pass or receive 64-bit rlimits for setrlimit()
+and getrlimit(). This is a limitation of Perl.
 
-To compile
+NOTE 4: More caveats (vendors' sloppy support for these things, et. al.)
+in the Resource.pm inlined pod doc.
 
-	perl Makefile.PL
-	make
+---------------
 
-and to install
+*) There is one exception to this on one platform. The terminally curious
+   can find out where.
 
-	make install
-
-The documentation is the pod inlined into Resource.pm, use for example
-
-	pod2man Resource.pm | nroff -man | more
-
-to view the examples.
-
-You can test how well the extension works with
-
-	make test
-
-Please report any bugs and/or missing/excess functionality to me.
-Especially if your system does support these BSD functions but
-the Makefile.PL fails to locate them, please let me know.
-
-The platforms known to work are
-
-	AIX 3.2.5
-	AIX 4.1.1
-	Digital UNIX 3.2C
-	HP-UX 9.03
-	IRIX 6.0.1
-	SunOS 4.1.3
-	SunOS 5.3
-
-Jarkko Hietaniemi <Jarkko.Hietaniemi@hut.fi>
-
-1995-12-18
+# eof

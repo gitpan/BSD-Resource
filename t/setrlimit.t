@@ -1,39 +1,42 @@
-# $Id: setrlimit.t,v 1.4 1995/12/18 10:14:04 jhi Exp jhi $
+#
+# setrlimit.t
+#
 
 use BSD::Resource;
 
-require 't/scanrlimits';
+$debug = 1;
 
-@LIM = scanrlimits();
+$LIM = get_rlimits();
+
+@LIM = keys %$LIM;
 
 @LIM{@LIM} = undef;
 
 @test = ();
 
-$debug = 1;
-
 sub newlim {
   my $old = shift;
 
-  return ($old == RLIM_INFINITY) ? $old : ($old ? int(.9 * $old) : 1);
+  return ($old == RLIM_INFINITY) ? $old : ($old ? int((90 * $old) / 100) : 1);
 }
 
 sub test {
   my ($lim) = shift;
-  my ($oldsoft, $oldhard, $newsoft, $newhard, $nowsoft, $nowhard, $set);
+  my ($oldsoft, $oldhard, $newsoft, $newhard, $nowsoft, $nowhard, $set, $ser);
 
   if (exists $LIM{$lim}) {
-    print "$lim\n" if ($debug);
+    print "# $lim\n" if ($debug);
     $lim = eval '&'.$lim;
     ($oldsoft, $oldhard) = getrlimit($lim);
-    print "RLIM_INFINITY = ", RLIM_INFINITY, "\n" if ($debug);
-    print "lim = $lim, oldsoft = $oldsoft, oldhard = $oldhard\n" if ($debug);
+    print "# RLIM_INFINITY = ", RLIM_INFINITY, "\n" if ($debug);
+    print "# lim = $lim, oldsoft = $oldsoft, oldhard = $oldhard\n" if ($debug);
     $newsoft = newlim($oldsoft);
     $newhard = newlim($oldhard);
-    print "lim = $lim, newsoft = $newsoft, newhard = $newhard\n" if ($debug);
+    print "# lim = $lim, newsoft = $newsoft, newhard = $newhard\n" if ($debug);
     $set = setrlimit($lim, $newsoft, $newhard);
+    $ser = $!;
     ($nowsoft, $nowhard) = getrlimit($lim);
-    print "set = $set, nowsoft = $nowsoft, nowhard = $nowhard\n" if ($debug);
+    print "# set = $set ($ser), nowsoft = $nowsoft, nowhard = $nowhard\n" if ($debug);
     push(@test,
 	 ($set == 0
 	  or
@@ -46,6 +49,7 @@ sub test {
 
 # getrlimit needed to test whether setrlimit() really works
 
+$! = 0;
 for $lim (@LIM) { test($lim) }
 
 if (@test) {

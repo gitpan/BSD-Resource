@@ -1,24 +1,36 @@
+#
+# getrlimit.t
+#
+
 use BSD::Resource;
 
-require 't/scanrlimits';
+$debug = 1;
 
-@LIM = scanrlimits();
+$LIM = get_rlimits();
 
-$maxt = scalar @LIM + 1;
+@k = keys   %$LIM;
 
-print "1..$maxt @LIM\n";
+@v = values %$LIM;
+
+$maxt = $#k + 2;
+
+print "1..$maxt\n";
+
+print "# k = @k, v = @v\n" if ($debug);
 
 print 'not '
-  unless (@LIM);
+  unless (@k);
 print "ok 1\n";
 
 $it = 2;
 
-for $lim (@LIM) {
+for $lim (@k) {
   print 'not ' unless (eval "getrlimit($lim)");
   print "ok $it\n";
   $it++;
 }
 
 # eof
+
+
 

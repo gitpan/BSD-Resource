@@ -1,11 +1,9 @@
 /*
- * Copyright (c) 1995 Jarkko Hietaniemi. All rights reserved.
+ * Copyright (c) 1995-7 Jarkko Hietaniemi. All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the same terms as Perl itself.
  *
- * Time-stamp:	<96/02/17 16:09:30 jhi>
- *
- * $Id: Resource.xs,v 1.11 1996/02/17 14:14:02 jhi Exp $
+ * Resource.xs
  *
  */
 
@@ -13,22 +11,23 @@
 #include "perl.h"
 #include "XSUB.h"
 
-/* if this fails your vendor has failed you and Perl cannot help */
+/* if this fails your vendor has failed you and Perl cannot help. */
 #include <sys/resource.h>
 
 #if defined(__sun__) && defined(__svr4__)
-#include <sys/rusage.h>
-/* Solaris has no RUSAGE_* defined in <sys/resource.h>, ugh.
+#   define SOLARIS
+#   ifdef I_SYS_RUSAGE
+#       include <sys/rusage.h>
+/* Some old Solarises have no RUSAGE_* defined in <sys/resource.h>.
  * There is <sys/rusage.h> which has but this file is very non-standard.
- * More the fun, the file itself warns will not be there for long.
- * Thank you, Sun. */
-#define SOLARIS
-#define part_of_sec tv_nsec
-#define part_in_sec 0.000001
+ * More the fun, the file itself warns will not be there for long. */
+#       define part_of_sec tv_nsec
+#   endif
 /* Solaris uses timerstruc_t in struct rusage. According to the <sys/time.h>
- * tv_nsec in the timerstruc_t is nanoseconds (and the name also supports
- * that theory) BUT getrusage() seems to tick microseconds, not nano.
- * Amazing, Sun. */
+ * in old Solarises tv_nsec in the timerstruc_t is nanoseconds (and the name
+ * also supports that theory) BUT getrusage() seems after al to tick
+ * microseconds, not nano. */
+#   define part_in_sec 0.000001
 #endif
 
 #ifdef I_SYS_TIME
@@ -51,6 +50,10 @@
 #  if defined(RUSAGE_SELF) || defined(SOLARIS)
 #     define HAS_GETRUSAGE
 #  endif
+#endif
+
+#if defined(OS2) && !defined(PRIO_PROCESS)
+#   define PRIO_PROCESS 0	/* This argument is ignored anyway. */
 #endif
 
 #if defined(__hpux)
@@ -77,9 +80,25 @@
 #   endif
 #endif
 
+#ifndef Rlim_t
+#   ifdef Quad_t
+#       define Rlim_t Quad_t
+#   else
+#       define Rlim_t unsigned long
+#   endif
+#endif
+
 #if defined(RLIM_INFINITY)	/* this is the only one we can count on (?) */
 #define HAS_GETRLIMIT
 #define HAS_SETRLIMIT
+#endif
+
+#ifndef PRIO_MAX
+#   define PRIO_MAX  20
+#endif
+
+#ifndef PRIO_MIN
+#   define PRIO_MIN -20
 #endif
 
 #if defined(PRIO_USER)
@@ -88,23 +107,23 @@
 #endif
 
 #ifndef HAS_GETPRIORITY
-#define getpriority(a) not_here("getpriority")
+#define _getpriority(a,b)   not_here("getpriority")
 #endif
 
 #ifndef HAS_GETRLIMIT
-#define getrlimit(a) not_here("getrlimit")
+#define _getrlimit(a,b)     not_here("getrlimit")
 #endif
 
 #ifndef HAS_GETRUSAGE
-#define getrusage(a) not_here("getrusage")
+#define _getrusage(a,b)     not_here("getrusage")
 #endif
 
 #ifndef HAS_SETPRIORITY
-#define setpriority(a) not_here("setpriority")
+#define _setpriority(a,b,c) not_here("setpriority")
 #endif
 
 #ifndef HAS_SETRLIMIT
-#define setrlimit(a,b,c) not_here("setrlimit")
+#define _setrlimit(a,b)     not_here("setrlimit")
 #endif
 
 static int
@@ -122,8 +141,22 @@ int arg;
 {
     errno = 0;
     switch (*name) {
+    case 'E':
+	if (strEQ(name, "EINVAL"))
+#ifdef EINVAL
+	  return EINVAL;
+#else
+	  goto not_there;
+#endif
+	if (strEQ(name, "ENOENT"))
+#ifdef ENOENT
+	  return ENOENT;
+#else
+	  goto not_there;
+#endif
+      break;
     case 'P':
-	if (strnEQ(name, "PRIO_", 4)) {
+	if (strnEQ(name, "PRIO_", 5)) {
 	    if (strEQ(name, "PRIO_MIN"))
 #ifdef PRIO_MIN
 		return PRIO_MIN;
@@ -218,6 +251,18 @@ int arg;
 #else
 		goto not_there;
 #endif
+	    if (strEQ(name, "RLIMIT_MEMLOCK"))
+#ifdef RLIMIT_MEMLOCK
+		return RLIMIT_MEMLOCK;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIMIT_NPROC"))
+#ifdef RLIMIT_NPROC
+		return RLIMIT_NPROC;
+#else
+		goto not_there;
+#endif
 	    if (strEQ(name, "RLIM_NLIMITS"))
 #ifdef RLIM_NLIMITS
 		return RLIM_NLIMITS;
@@ -226,7 +271,7 @@ int arg;
 #endif
 	    if (strEQ(name, "RLIM_INFINITY"))
 #ifdef RLIM_INFINITY
-		return RLIM_INFINITY;
+		return -1.0;	/* trust me */
 #else
 		goto not_there;
 #endif
@@ -253,7 +298,7 @@ int arg;
 #endif
 	    break;
 	 }
-    goto not_there;
+    }
 
     errno = EINVAL;
     return 0;
@@ -261,76 +306,146 @@ int arg;
 not_there:
     errno = ENOENT;
     return 0;
-    }
 }
 
 MODULE = BSD::Resource		PACKAGE = BSD::Resource
+
+# No, I won't. 5.001m xsubpp chokes on this.
+# PROTOTYPES: enable
 
 double
 constant(name,arg)
 	char *		name
 	int		arg
 
-int
-getpriority(which,who)
+void
+_getpriority(which = PRIO_PROCESS, who = 0)
 	int		which
 	int		who
+    CODE:
+	{
+	  int		prio;
 
-int
-getrlimit(resource)
+	  ST(0) = sv_newmortal();
+	  errno = 0; /* getpriority() can successfully return <= 0 */
+	  prio = getpriority(which, who);
+	  if (errno == 0) 
+	    sv_setiv(ST(0), prio);
+	  else
+	    ST(0) = &sv_undef;
+	}
+
+void
+_getrlimit(resource)
 	int		resource
     PPCODE:
-	struct rlimit buf;
-	if (getrlimit(resource,&buf) >= 0) {
+	struct rlimit rl;
+	if (getrlimit(resource, &rl) == 0) {
 	    EXTEND(sp, 2);
-	    PUSHs(newSViv((unsigned long)buf.rlim_cur));
-	    PUSHs(newSViv((unsigned long)buf.rlim_max));
+	    PUSHs(sv_2mortal(newSVnv((double)(rl.rlim_cur == RLIM_INFINITY ? -1.0 : rl.rlim_cur))));
+	    PUSHs(sv_2mortal(newSVnv((double)(rl.rlim_max == RLIM_INFINITY ? -1.0 : rl.rlim_max))));
 	}
 
-int
-getrusage(who)
+void
+_getrusage(who = RUSAGE_SELF)
 	int		who
     PPCODE:
-	struct rusage buf;
-	if (getrusage(who,&buf) >= 0) {
+	{
+	  struct rusage ru;
+	  if (getrusage(who, &ru) == 0) {
 	    EXTEND(sp, 16);
-	    PUSHs(newSVnv(TV2DS(buf.ru_utime)));
-	    PUSHs(newSVnv(TV2DS(buf.ru_stime)));
-	    PUSHs(newSViv((I32)buf.ru_maxrss));
-	    PUSHs(newSViv((I32)buf.ru_ixrss));
-	    PUSHs(newSViv((I32)buf.ru_idrss));
-	    PUSHs(newSViv((I32)buf.ru_isrss));
-	    PUSHs(newSViv((I32)buf.ru_minflt));
-	    PUSHs(newSViv((I32)buf.ru_majflt));
-	    PUSHs(newSViv((I32)buf.ru_nswap));
-	    PUSHs(newSViv((I32)buf.ru_inblock));
-	    PUSHs(newSViv((I32)buf.ru_oublock));
-	    PUSHs(newSViv((I32)buf.ru_msgsnd));
-	    PUSHs(newSViv((I32)buf.ru_msgrcv));
-	    PUSHs(newSViv((I32)buf.ru_nsignals));
-	    PUSHs(newSViv((I32)buf.ru_nvcsw));
-	    PUSHs(newSViv((I32)buf.ru_nivcsw));
+	    PUSHs(sv_2mortal(newSVnv(TV2DS(ru.ru_utime))));
+	    PUSHs(sv_2mortal(newSVnv(TV2DS(ru.ru_stime))));
+	    PUSHs(sv_2mortal(newSViv(ru.ru_maxrss)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_ixrss)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_idrss)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_isrss)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_minflt)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_majflt)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_nswap)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_inblock)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_oublock)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_msgsnd)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_msgrcv)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_nsignals)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_nvcsw)));
+	    PUSHs(sv_2mortal(newSVnv(ru.ru_nivcsw)));
+	  }
 	}
 
-int
-setpriority(which,who,priority)
+void
+_setpriority(which = PRIO_PROCESS,who = 0,priority = PRIO_MAX/2)
 	int		which
 	int		who
 	int		priority
     CODE:
-	RETVAL = setpriority(which,who,priority) == 0 ? 1 : 0;
-    OUTPUT:
-	RETVAL
+	{
+	  if (items == 2) {
+	    /* if two arguments they are (which, priority),
+	     * not (which, who). who defaults to 0. */
+	      priority = who;
+	      who = 0;
+	  }
+	  ST(0) = sv_newmortal();
+	  ST(0) = (setpriority(which, who, priority) == 0) ?
+	    &sv_yes : &sv_undef;
+	}
 
-int
-setrlimit(resource,soft,hard)
-	int		resource
-	unsigned long	soft
-	unsigned long	hard
+void
+_setrlimit(resource,soft,hard)
+	int	resource
+	double 	soft
+	double	hard
     CODE:
-	struct rlimit buf;
-	buf.rlim_cur = soft;
-	buf.rlim_max = hard;
-	RETVAL = setrlimit(resource,&buf) == 0 ? 1 : 0;
+	{
+	    struct rlimit rl;
+
+            rl.rlim_cur = soft == -1.0 ? RLIM_INFINITY : (Rlim_t) soft;
+            rl.rlim_max = hard == -1.0 ? RLIM_INFINITY : (Rlim_t) hard;
+
+	    ST(0) = sv_newmortal();
+            ST(0) = (setrlimit(resource, &rl) == 0) ? &sv_yes: &sv_undef;
+	}
+
+HV *
+_get_rlimits()
+    CODE:
+	RETVAL = newHV();
+#ifdef RLIMIT_AS
+	hv_store(RETVAL, "RLIMIT_AS"       ,  9, newSViv(RLIMIT_AS),       0);
+#endif
+#ifdef RLIMIT_CORE
+	hv_store(RETVAL, "RLIMIT_CORE"     , 11, newSViv(RLIMIT_CORE),     0);
+#endif
+#ifdef RLIMIT_CPU
+	hv_store(RETVAL, "RLIMIT_CPU"      , 10, newSViv(RLIMIT_CPU),      0);
+#endif
+#ifdef RLIMIT_DATA
+	hv_store(RETVAL, "RLIMIT_DATA"     , 11, newSViv(RLIMIT_DATA),     0);
+#endif
+#ifdef RLIMIT_FSIZE
+	hv_store(RETVAL, "RLIMIT_FSIZE"    , 12, newSViv(RLIMIT_FSIZE),    0);
+#endif
+#ifdef RLIMIT_NOFILE
+	hv_store(RETVAL, "RLIMIT_NOFILE"   , 13, newSViv(RLIMIT_NOFILE),   0);
+#endif
+#ifdef RLIMIT_OPEN_MAX
+	hv_store(RETVAL, "RLIMIT_OPEN_MAX" , 15, newSViv(RLIMIT_OPEN_MAX), 0);
+#endif
+#ifdef RLIMIT_RSS
+	hv_store(RETVAL, "RLIMIT_RSS"      , 10, newSViv(RLIMIT_RSS),      0);
+#endif
+#ifdef RLIMIT_MEMLOCK
+	hv_store(RETVAL, "RLIMIT_MEMLOCK"  , 14, newSViv(RLIMIT_MEMLOCK),  0);
+#endif
+#ifdef RLIMIT_NPROC
+	hv_store(RETVAL, "RLIMIT_NPROC"    , 12, newSViv(RLIMIT_NPROC),    0);
+#endif
+#ifdef RLIMIT_STACK
+	hv_store(RETVAL, "RLIMIT_STACK"    , 12, newSViv(RLIMIT_STACK),    0);
+#endif
+#ifdef RLIMIT_VMEM
+	hv_store(RETVAL, "RLIMIT_VMEM"     , 11, newSViv(RLIMIT_VMEM),     0);
+#endif
     OUTPUT:
 	RETVAL
