@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.14';
+$VERSION = '1.15';
 
 use Carp;
 use AutoLoader;
@@ -432,9 +432,12 @@ should use get_rlimits() to check which resource limits are defined.
 
 	$currprio = getpriority();
 
-=head1 VERSION
+=head1 COPYRIGHT AND LICENSE
 
-Release 1.08
+Copyright 1996-2002 Jarkko Hietaniemi All Rights Reserved
+
+This library is free software; you may redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 AUTHOR
 

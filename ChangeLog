@@ -1,4 +1,10 @@
-Sat Jan 26 07:14:00 2002  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
+Thu May  9 04:18:09 2002  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Add COPYRIGHT AND LICENSE to Resource.pm.
+
+	* Release 1.15.
+
+Sat Jan 26 07:14:00 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* A space between the 2>/dev/null and the command is nice.
 
