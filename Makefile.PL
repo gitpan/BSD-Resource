@@ -54,7 +54,7 @@ sub try_compile_and_link {
 	    }
 	    $cccmd =
 		"$cc -c -o $tmp.o -I$Config{'installarchlib'}/CORE $Config{'ccflags'}";
-	    $cccmd .= "2>/dev/null" unless $ENV{VERBOSE};
+	    $cccmd .= " 2>/dev/null" unless $ENV{VERBOSE};
 	    print STDERR "[cccmd = $cccmd]\n" if $ENV{VERBOSE};
 	    if (system("$cccmd $tmp.c") == 0) {
 		$ok = -s "$tmp.o";
