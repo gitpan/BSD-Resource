@@ -1,0 +1,169 @@
+head	1.4;
+access;
+symbols;
+locks
+	jhi:1.4; strict;
+comment	@# @;
+
+
+1.4
+date	95.12.18.10.14.04;	author jhi;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	95.12.18.09.58.50;	author jhi;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	95.12.07.19.32.49;	author jhi;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	95.12.07.10.17.13;	author jhi;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@debug info.
+@
+text
+@# $Id: setrlimit.t,v 1.3 1995/12/18 09:58:50 jhi Exp jhi $
+
+use BSD::Resource;
+
+require 't/scanrlimits';
+
+@@LIM = scanrlimits();
+
+@@LIM{@@LIM} = undef;
+
+@@test = ();
+
+$debug = 0;
+
+sub newlim {
+  my $old = shift;
+
+  return ($old == RLIM_INFINITY) ? $old : ($old ? int(.9 * $old) : 1);
+}
+
+sub test {
+  my ($lim) = shift;
+  my ($oldsoft, $oldhard, $newsoft, $newhard, $nowsoft, $nowhard, $set);
+
+  if (exists $LIM{$lim}) {
+    print "$lim\n" if ($debug);
+    $lim = eval '&'.$lim;
+    ($oldsoft, $oldhard) = getrlimit($lim);
+    print "RLIM_INFINITY = ", RLIM_INFINITY, "\n" if ($debug);
+    print "lim = $lim, oldsoft = $oldsoft, oldhard = $oldhard\n" if ($debug);
+    $newsoft = newlim($oldsoft);
+    $newhard = newlim($oldhard);
+    print "lim = $lim, newsoft = $newsoft, newhard = $newhard\n" if ($debug);
+    $set = setrlimit($lim, $newsoft, $newhard);
+    ($nowsoft, $nowhard) = getrlimit($lim);
+    print "set = $set, nowsoft = $nowsoft, nowhard = $nowhard\n" if ($debug);
+    push(@@test,
+	 ($set == 0
+	  or
+	  $nowsoft != $newsoft
+	  or
+	  $nowhard != $newhard
+	  ));
+  }
+}
+
+# getrlimit needed to test whether setrlimit() really works
+
+for $lim (@@LIM) { test($lim) }
+
+if (@@test) {
+  $ntest = scalar @@test;
+  print "1..$ntest\n";
+  for $i (1..$ntest) {
+    print 'not ' if ($test[$i-1]);
+    print "ok $i\n";
+  }
+} else {
+  die "could not find any resource limits to test\n";
+}
+
+# eof
+@
+
+
+1.3
+log
+@RLIM_INFINITY.
+@
+text
+@d1 1
+a1 1
+# $Id: setrlimit.t,v 1.2 1995/12/07 19:32:49 jhi Exp jhi $
+d29 1
+a29 1
+    print "RLIM_INFINITY = ", RLIM_INFINITY, "\n";
+@
+
+
+1.2
+log
+@debug code. RLIM_INFINITY. int(.9 * $old).
+@
+text
+@d1 1
+a1 1
+# $Id: setrlimit.t,v 1.1 1995/12/07 10:17:13 jhi Exp jhi $
+d15 6
+d29 1
+d31 2
+a32 2
+    $newsoft = ($oldsoft == RLIM_INFINITY) ? $oldsoft : int(.9 * $oldsoft);
+    $newhard = ($oldhard == RLIM_INFINITY) ? $oldhard : int(.9 * $oldhard);
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+# $Id$
+d13 2
+d16 1
+a16 1
+  my ($lim) = @@_;
+a17 1
+  my $inf = &RLIM_INFINITY();
+d20 1
+d23 14
+a36 17
+#    print "lim = $lim, oldsoft = $oldsoft, oldhard = $oldhard\n";
+    if ($oldsoft > 0 and $oldhard > 0) {
+      # what can we safely try to setrlimit?
+      # well, maybe the current limit * .95?
+      $newsoft = int(.95 * $oldsoft) unless ($oldsoft == -1);
+      $newhard = int(.95 * $oldhard) unless ($oldhard == -1);
+#      print "lim = $lim, newsoft = $newsoft, newhard = $newhard\n";
+      $set = setrlimit($lim, $newsoft, $newhard);
+      ($nowsoft, $nowhard) = getrlimit($lim);
+      push(@@test,
+	   ($set == 0
+	    or
+	    $nowsoft != $newsoft
+	    or
+	    $nowhard != $newhard
+	    ));
+    }
+@
