@@ -8,7 +8,7 @@
 
 use BSD::Resource;
 
-$debug = 1;
+my $debug = 0;
 
 $| = 1 if ($debug);
 
@@ -67,9 +67,9 @@ $tsc = $tsu + $tss;
 sub far ($$$) {
   my ($a, $b, $r) = @_;
 
-  return $a if ($b == 0);
-  print "# far: a = $a, b = $b, r = $r: ", abs($a/$b-1), "\n" if ($debug);
-  ($b == 0) ? 0 : (abs($a/$b-1) > $r);
+  print "# far: a = $a, b = $b, r = $r\n" if $debug;
+  print "# far: abs(a/b-1) = ", $b ? abs($a/$b-1) : "-", "\n" if $debug; 
+  $b == 0 ? 0 : (abs($a/$b-1) > $r);
 }
 
 if ($debug) {

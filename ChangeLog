@@ -1,3 +1,13 @@
+Wed Nov 20 16:42:50 2002  Jarkko Hietaniemi  <jhi@lyta.hut.fi>
+
+	* Problem found by Jeff Boes, forwarded and analyzed
+	  by Slaven Rezic: if one has a fast machine and/or
+	  the granularity of times() is low, one could get false
+	  negatives from far() in getrusage.t.  Fixed the same
+	  problem in times.t.
+
+	* Bumped the copyright statement years.
+
 Thu Sep 19 16:53:26 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Patch from Miles Egan to use -I$archlib/CORE instead
