@@ -99,6 +99,9 @@ sub init {
     die <<EOM unless has_resource_h();
 Your operating system does not seem to have <sys/resource.h> or <sys/rusage.h>.
 
+(Run "perl Makefile.PL" with the environment variable VERBOSE set to 1 (one)
+ too see in more detail what went wrong.)
+
 There is no way $PACKAGE is going to work.
 
 I am awfully sorry but I cannot go further.
@@ -111,8 +114,14 @@ EOM
     # old Solarises had this oddity.
     $DEFINE .= ' -DI_SYS_RUSAGE' if (-r '/usr/include/sys/rusage.h');
 
-    # ucb is poison for Solaris.
-    $LIBS = $Config{'osname'} eq 'solaris' ? [''] : ['-lucb -lbsd'];
+    # ucb is poison for Solaris, and bsd may be on IRIX.
+    if ($Config{'osname'} eq 'solaris') {
+      $LIBS = [''];
+    } elsif (($Config{'osname'} eq 'irix') &&
+	     ($Config{'ccflags'} =~ m/-D_BSD_TIME/) &&
+	     ($Config{'ccflags'} =~ m/-D_BSD_TYPES/)) {
+      $LIBS = [''];
+    }
 }
 
 sub find_Rlim_t {

@@ -1,3 +1,13 @@
+Sun Sep 15 18:44:36 2002  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Patch from Allen Smith to avoid -lbsd in IRIX
+	  since it potentially brings in harmful side effects
+	  regarding setpgrp/setgroups.
+		
+	* Mention the use of VERBOSE in the probe failure message.
+		
+	* Release 1.16.
+
 Thu May  9 04:18:09 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Add COPYRIGHT AND LICENSE to Resource.pm.
