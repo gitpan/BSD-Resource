@@ -8,25 +8,17 @@
 require 5.001;
 
 $PACKAGE = 'BSD::Resource';
-$VERSION = 1.0701;
+$VERSION = 1.08;
 
 use Config;
 use ExtUtils::MakeMaker;
-
-sub TMPDIR {
-    my $TMPDIR =
-	(grep(defined $_ && -d $_ && -w $_,
-	      ((defined $ENV{'TMPDIR'} ? $ENV{'TMPDIR'} : undef),
-	       qw(/var/tmp /usr/tmp /tmp))))[0]
-		   unless defined $TMPDIR;
-    $TMPDIR || die "Cannot find writable temporary directory.\n";
-}
+use File::Basename;
 
 sub try_compile_and_link {
-    my ($c, $cccmd) = @_;
+    my ($c, %opt) = @_;
 
     my ($ok) = 0;
-    my ($tmp) = TMPDIR . '/' . "tmp$$";
+    my ($tmp) = "tmp$$";
     local(*TMPC);
 
     unlink("$tmp.c", "$tmp.o");
@@ -34,15 +26,45 @@ sub try_compile_and_link {
     if (open(TMPC, ">$tmp.c")) {
 	print TMPC $c;
 	close(TMPC);
-	$cccmd =
-	    "$Config{'cc'} -c -o $tmp.o $Config{'ccflags'} $tmp.c 2>/dev/null"
-		unless (defined $cccmd);
-	system($cccmd);
-	$ok = -s "$tmp.o";
+	my $cc = exists $ENV{CC} ? $ENV{CC} : $Config{'cc'};
+	$cc = basename($cc) unless -x $cc;
+	my $cccmd = "$cc -c -o $tmp.o $Config{'ccflags'} $tmp.c 2>/dev/null";
+	if (system($cccmd) == 0) {
+	    $ok = -s "$tmp.o";
+	}
 	unlink("$tmp.c", "$tmp.o");
     }
     
     $ok;
+}
+
+# This is unused for now.
+sub try_cpp_and_grep {
+    my ($c, %opt) = @_;
+
+    my @g;
+    my ($tmp) = "tmp$$";
+    local(*TMPC);
+
+    unlink("$tmp.c", "$tmp.o");
+
+    if (open(TMPC, ">$tmp.c")) {
+	print TMPC $c;
+	close(TMPC);
+	my $cc = $Config{'cc'};
+	$cc = basename($cc) unless -x $cc;
+	my $cccmd = "$cc -E $Config{'ccflags'} $tmp.c 2>/dev/null";
+	local(*TMPE);
+	if (open(TMPE, "$cccmd|")) {
+	    while (<TMPE>) {
+		push @g, /$opt{re}/g;
+	    }
+	    close(TMPE);
+	}
+	unlink("$tmp.c");
+    }
+    
+    @g;
 }
 
 sub has_resource_h () {
@@ -52,17 +74,18 @@ sub has_resource_h () {
 static int foo;
 EOM
 
-    return 1 if
+    return 2 if
     try_compile_and_link(<<EOM);
 #include <sys/types.h>
-#include <sys/time.h>
+#include <sys/time.h> 
 #include <sys/resource.h>
 static int foo;
 EOM
 
-    return 1 if
+    # Solaris 1 wierdo
+
+    return 3 if
     try_compile_and_link(<<EOM);
-/* Solaris 1, any others? */
 #include <sys/rusage.h>
 static int foo;
 EOM
@@ -72,8 +95,7 @@ EOM
 
 sub init {
     die <<EOM unless has_resource_h();
-Your operating system does not seem to have
-<sys/resource.h> or <sys/rusage.h>?
+Your operating system does not seem to have <sys/resource.h> or <sys/rusage.h>.
 
 There is no way $PACKAGE is going to work.
 
@@ -92,11 +114,14 @@ EOM
 }
 
 sub find_Rlim_t {
-	my ($tmp) = $TMPDIR . '/' . "rlim$$";
+	my ($tmp) = "rlim$$";
 	my ($worrynot) = 0;
 
 	print "You seem ";
 	my $has = try_compile_and_link(<<EOM);
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
 #endif
@@ -110,9 +135,9 @@ EOM
 	    $worrynot = 1;
 	}
 
-	print "to have rlim_t defined. (";
+	print "to have rlim_t defined (";
 	print $worrynot ? "this is okay" : "which is nice";
-	print ")\n\n";
+	print ").\n\n";
 }
 
 sub configure {

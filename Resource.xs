@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995-8 Jarkko Hietaniemi. All rights reserved.
+ * Copyright (c) 1995-9,2000 Jarkko Hietaniemi. All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the same terms as Perl itself.
  *
@@ -10,6 +10,15 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+
+#if (PERL_VERSION < 4) || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4))
+#define PL_sv_undef sv_undef
+#define PL_sv_yes sv_yes
+#endif
+
+#if defined(__hpux) && !defined(_INCLUDE_XOPEN_SOURCE_EXTENDED)
+#define _INCLUDE_XOPEN_SOURCE_EXTENDED
+#endif
 
 /* if this fails your vendor has failed you and Perl cannot help. */
 #include <sys/resource.h>
@@ -29,7 +38,7 @@
  * microseconds, not nano. */
 #   define part_in_sec 0.000001
 #
-/* Newer Solarises (5.5, 5.6) have much better support for rusage-kinda
+/* Newer Solarises (5.5 onwards) have much better support for rusage-kinda
  * things via the proc interface. */
 #   define _STRUCTURED_PROC 1
 #   include <sys/procfs.h>
@@ -76,7 +85,7 @@
 #   define PRIO_PROCESS 0	/* This argument is ignored anyway. */
 #endif
 
-#if defined(__hpux)
+#if defined(__hpux) && defined(RLIMIT_NLIMITS)
 /* there is getrusage() in HPUX but only as an indirect syscall */
 #   define try_getrusage_as_syscall
 /* some rlimits exist (but are officially unsupported by HP) */
@@ -90,6 +99,39 @@
 #   define RLIMIT_OPEN_MAX RLIMIT_NOFILE
 #   define RLIM_NLIMITS    7
 #   define RLIM_INFINITY   0x7fffffff
+#endif
+
+#ifdef __linux__
+    /* enums without #defines, how wonderful */
+#   ifndef PRIO_PROCESS
+#       define PRIO_PROCESS PRIO_PROCESS
+#   endif
+#   ifndef PRIO_PGRP
+#       define PRIO_PGRP PRIO_PGRP
+#   endif
+#   ifndef PRIO_USER
+#       define PRIO_USER PRIO_USER
+#   endif
+#endif
+
+#if !defined(RLIMIT_OPEN_MAX) && defined(RLIMIT_NOFILE)
+#define RLIMIT_OPEN_MAX RLIMIT_NOFILE
+#endif
+
+#if !defined(RLIMIT_NOFILE) && defined(RLIMIT_OPEN_MAX)
+#define RLIMIT_NOFILE RLIMIT_OPEN_MAX
+#endif
+
+#if !defined(RLIMIT_OFILE) && defined(RLIMIT_NOFILE)
+#define RLIMIT_OFILE RLIMIT_NOFILE
+#endif
+
+#if !defined(RLIMIT_VMEM) && defined(RLIMIT_AS)
+#define RLIMIT_VMEM RLIMIT_AS
+#endif
+
+#if !defined(RLIMIT_AS) && defined(RLIMIT_VMEM)
+#define RLIMIT_AS RLIMIT_VMEM
 #endif
 
 #ifdef try_getrusage_as_syscall
@@ -122,8 +164,12 @@
 #endif
 
 #if defined(PRIO_USER)
+#ifndef HAS_GETPRIORITY
 #define HAS_GETPRIORITY
+#endif
+#ifndef HAS_SETPRIORITY
 #define HAS_SETPRIORITY
+#endif
 #endif
 
 #ifndef HAS_GETPRIORITY
@@ -178,31 +224,31 @@ int arg;
     case 'P':
 	if (strnEQ(name, "PRIO_", 5)) {
 	    if (strEQ(name, "PRIO_MIN"))
-#ifdef PRIO_MIN
+#if defined(PRIO_MIN) || defined(HAS_PRIO_MIN)
 		return PRIO_MIN;
 #else
 		goto not_there;
 #endif
 	    if (strEQ(name, "PRIO_MAX"))
-#ifdef PRIO_MAX
+#if defined(PRIO_MAX) || defined(HAS_PRIO_MAX)
 		return PRIO_MAX;
 #else
 		goto not_there;
 #endif
 	    if (strEQ(name, "PRIO_USER"))
-#ifdef PRIO_USER
+#if defined(PRIO_USER) || defined(HAS_PRIO_USER)
 		return PRIO_USER;
 #else
 		goto not_there;
 #endif
 	    if (strEQ(name, "PRIO_PGRP"))
-#ifdef PRIO_PGRP
+#if defined(PRIO_PGRP) || defined(HAS_PRIO_PGRP)
 		return PRIO_PGRP;
 #else
 		goto not_there;
 #endif
 	    if (strEQ(name, "PRIO_PROCESS"))
-#ifdef PRIO_PROCESS
+#if defined(PRIO_PROCESS) || defined(HAS_PRIO_PROCESS)
 		return PRIO_PROCESS;
 #else
 		goto not_there;
@@ -211,87 +257,123 @@ int arg;
     goto not_there;
     case 'R':
 	if (strnEQ(name, "RLIM", 4)) {
-	    if (strEQ(name, "RLIMIT_CPU"))
-#ifdef RLIMIT_CPU
-		return RLIMIT_CPU;
+	    if (strEQ(name, "RLIMIT_AIO_MEM"))
+#if defined(RLIMIT_AIO_MEM) || defined(HAS_RLIMIT_AIO_MEM)
+		return RLIMIT_AIO_MEM;
 #else
 		goto not_there;
 #endif
-	    if (strEQ(name, "RLIMIT_FSIZE"))
-#ifdef RLIMIT_FSIZE
-		return RLIMIT_FSIZE;
-#else
-		goto not_there;
-#endif
-	    if (strEQ(name, "RLIMIT_DATA"))
-#ifdef RLIMIT_DATA
-		return RLIMIT_DATA;
-#else
-		goto not_there;
-#endif
-	    if (strEQ(name, "RLIMIT_NOFILE"))
-#ifdef RLIMIT_NOFILE
-		return RLIMIT_NOFILE;
-#else
-		goto not_there;
-#endif
-	    if (strEQ(name, "RLIMIT_OPEN_MAX"))
-#ifdef RLIMIT_OPEN_MAX
-		return RLIMIT_OPEN_MAX;
+	    if (strEQ(name, "RLIMIT_AIO_OPS"))
+#if defined(RLIMIT_AIO_OPS) || defined(HAS_RLIMIT_AIO_OPS)
+		return RLIMIT_AIO_OPS;
 #else
 		goto not_there;
 #endif
 	    if (strEQ(name, "RLIMIT_AS"))
-#ifdef RLIMIT_AS
+#if defined(RLIMIT_AS) || defined(HAS_RLIMIT_AS)
 		return RLIMIT_AS;
 #else
 		goto not_there;
 #endif
-	    if (strEQ(name, "RLIMIT_VMEM"))
-#ifdef RLIMIT_VMEM
-		return RLIMIT_VMEM;
-#else
-		goto not_there;
-#endif
-	    if (strEQ(name, "RLIMIT_STACK"))
-#ifdef RLIMIT_STACK
-		return RLIMIT_STACK;
-#else
-		goto not_there;
-#endif
 	    if (strEQ(name, "RLIMIT_CORE"))
-#ifdef RLIMIT_CORE
+#if defined(RLIMIT_CORE) || defined(HAS_RLIMIT_CORE)
 		return RLIMIT_CORE;
 #else
 		goto not_there;
 #endif
-	    if (strEQ(name, "RLIMIT_RSS"))
-#ifdef RLIMIT_RSS
-		return RLIMIT_RSS;
+	    if (strEQ(name, "RLIMIT_CPU"))
+#if defined(RLIMIT_CPU) || defined(HAS_RLIMIT_CPU)
+		return RLIMIT_CPU;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIMIT_DATA"))
+#if defined(RLIMIT_DATA) || defined(HAS_RLIMIT_DATA)
+		return RLIMIT_DATA;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIMIT_FSIZE"))
+#if defined(RLIMIT_FSIZE) || defined(HAS_RLIMIT_FSIZE)
+		return RLIMIT_FSIZE;
 #else
 		goto not_there;
 #endif
 	    if (strEQ(name, "RLIMIT_MEMLOCK"))
-#ifdef RLIMIT_MEMLOCK
+#if defined(RLIMIT_MEMLOCK) || defined(HAS_RLIMIT_MEMLOCK)
 		return RLIMIT_MEMLOCK;
 #else
 		goto not_there;
 #endif
+	    if (strEQ(name, "RLIMIT_NOFILE"))
+#if defined(RLIMIT_NOFILE) || defined(HAS_RLIMIT_NOFILE)
+		return RLIMIT_NOFILE;
+#else
+		goto not_there;
+#endif
 	    if (strEQ(name, "RLIMIT_NPROC"))
-#ifdef RLIMIT_NPROC
+#if defined(RLIMIT_NPROC) || defined(HAS_RLIMIT_NPROC)
 		return RLIMIT_NPROC;
 #else
 		goto not_there;
 #endif
-	    if (strEQ(name, "RLIM_NLIMITS"))
-#ifdef RLIM_NLIMITS
-		return RLIM_NLIMITS;
+	    if (strEQ(name, "RLIMIT_OFILE"))
+#if defined(RLIMIT_OFILE) || defined(HAS_RLIMIT_OFILE)
+		return RLIMIT_OFILE;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIMIT_OPEN_MAX"))
+#if defined(RLIMIT_OPEN_MAX) || defined(HAS_RLIMIT_OPEN_MAX)
+		return RLIMIT_OPEN_MAX;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIMIT_RSS"))
+#if defined(RLIMIT_RSS) || defined(HAS_RLIMIT_RSS)
+		return RLIMIT_RSS;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIMIT_STACK"))
+#if defined(RLIMIT_STACK) || defined(HAS_RLIMIT_STACK)
+		return RLIMIT_STACK;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIMIT_TCACHE"))
+#if defined(RLIMIT_TCACHE) || defined(HAS_RLIMIT_TCACHE)
+		return RLIMIT_TCACHE;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIMIT_VMEM"))
+#if defined(RLIMIT_VMEM) || defined(HAS_RLIMIT_VMEM)
+		return RLIMIT_VMEM;
 #else
 		goto not_there;
 #endif
 	    if (strEQ(name, "RLIM_INFINITY"))
-#ifdef RLIM_INFINITY
+#if defined(RLIM_INFINITY) || defined(HAS_RLIM_INFINITY)
 		return -1.0;	/* trust me */
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIM_NLIMITS"))
+#if defined(RLIM_NLIMITS) || defined(HAS_RLIM_NLIMITS)
+		return RLIM_NLIMITS;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIM_SAVED_CUR"))
+#if defined(RLIM_SAVED_CUR) || defined(HAS_RLIM_SAVED_CUR)
+		return RLIM_SAVED_CUR;
+#else
+		goto not_there;
+#endif
+	    if (strEQ(name, "RLIM_SAVED_MAX"))
+#if defined(RLIM_SAVED_MAX) || defined(HAS_RLIM_SAVED_MAX)
+		return RLIM_SAVED_MAX;
 #else
 		goto not_there;
 #endif
@@ -299,25 +381,25 @@ int arg;
 	 }
 	if (strnEQ(name, "RUSAGE_", 7)) {
 	    if (strEQ(name, "RUSAGE_BOTH"))
-#ifdef RUSAGE_BOTH
+#if defined(RUSAGE_BOTH) || defined(HAS_RUSAGE_BOTH)
 		return RUSAGE_BOTH;
 #else
 		goto not_there;
 #endif
-	    if (strEQ(name, "RUSAGE_SELF"))
-#ifdef RUSAGE_SELF
-		return RUSAGE_SELF;
-#else
-		goto not_there;
-#endif
 	    if (strEQ(name, "RUSAGE_CHILDREN"))
-#ifdef RUSAGE_CHILDREN
+#if defined(RUSAGE_CHILDREN) || defined(HAS_RUSAGE_CHILDREN)
 		return RUSAGE_CHILDREN;
 #else
 		goto not_there;
 #endif
+	    if (strEQ(name, "RUSAGE_SELF"))
+#if defined(RUSAGE_SELF) || defined(HAS_RUSAGE_SELF)
+		return RUSAGE_SELF;
+#else
+		goto not_there;
+#endif
 	    if (strEQ(name, "RUSAGE_THREAD"))
-#ifdef RUSAGE_THREAD
+#if defined(RUSAGE_THREAD) || defined(HAS_RUSAGE_THREAD)
 		return RUSAGE_THREAD;
 #else
 		goto not_there;
@@ -358,7 +440,7 @@ _getpriority(which = PRIO_PROCESS, who = 0)
 	  if (errno == 0) 
 	    sv_setiv(ST(0), prio);
 	  else
-	    ST(0) = &sv_undef;
+	    ST(0) = &PL_sv_undef;
 	}
 
 void
@@ -536,7 +618,7 @@ _setpriority(which = PRIO_PROCESS,who = 0,priority = PRIO_MAX/2)
 	  }
 	  ST(0) = sv_newmortal();
 	  ST(0) = (setpriority(which, who, priority) == 0) ?
-	    &sv_yes : &sv_undef;
+	    &PL_sv_yes : &PL_sv_undef;
 	}
 
 void
@@ -552,47 +634,59 @@ _setrlimit(resource,soft,hard)
             rl.rlim_max = hard == -1.0 ? RLIM_INFINITY : (Rlim_t) hard;
 
 	    ST(0) = sv_newmortal();
-            ST(0) = (setrlimit(resource, &rl) == 0) ? &sv_yes: &sv_undef;
+            ST(0) = (setrlimit(resource, &rl) == 0) ? &PL_sv_yes: &PL_sv_undef;
 	}
 
 HV *
 _get_rlimits()
     CODE:
 	RETVAL = newHV();
-#ifdef RLIMIT_AS
+#if defined(RLIMIT_AIO_MEM) || defined(HAS_RLIMIT_AIO_MEM)
+	hv_store(RETVAL, "RLIMIT_AIO_MEM"  , 14, newSViv(RLIMIT_AIO_MEM),  0);
+#endif
+#if defined(RLIMIT_AIO_OPS) || defined(HAS_RLIMIT_AIO_OPS)
+	hv_store(RETVAL, "RLIMIT_AIO_OPS"  , 14, newSViv(RLIMIT_AIO_OPS),  0);
+#endif
+#if defined(RLIMIT_AS) || defined(HAS_RLIMIT_AS)
 	hv_store(RETVAL, "RLIMIT_AS"       ,  9, newSViv(RLIMIT_AS),       0);
 #endif
-#ifdef RLIMIT_CORE
+#if defined(RLIMIT_CORE) || defined(HAS_RLIMIT_CORE)
 	hv_store(RETVAL, "RLIMIT_CORE"     , 11, newSViv(RLIMIT_CORE),     0);
 #endif
-#ifdef RLIMIT_CPU
+#if defined(RLIMIT_CPU) || defined(HAS_RLIMIT_CPU)
 	hv_store(RETVAL, "RLIMIT_CPU"      , 10, newSViv(RLIMIT_CPU),      0);
 #endif
-#ifdef RLIMIT_DATA
+#if defined(RLIMIT_DATA) || defined(HAS_RLIMIT_DATA)
 	hv_store(RETVAL, "RLIMIT_DATA"     , 11, newSViv(RLIMIT_DATA),     0);
 #endif
-#ifdef RLIMIT_FSIZE
+#if defined(RLIMIT_FSIZE) || defined(HAS_RLIMIT_FSIZE)
 	hv_store(RETVAL, "RLIMIT_FSIZE"    , 12, newSViv(RLIMIT_FSIZE),    0);
 #endif
-#ifdef RLIMIT_NOFILE
-	hv_store(RETVAL, "RLIMIT_NOFILE"   , 13, newSViv(RLIMIT_NOFILE),   0);
-#endif
-#ifdef RLIMIT_OPEN_MAX
-	hv_store(RETVAL, "RLIMIT_OPEN_MAX" , 15, newSViv(RLIMIT_OPEN_MAX), 0);
-#endif
-#ifdef RLIMIT_RSS
-	hv_store(RETVAL, "RLIMIT_RSS"      , 10, newSViv(RLIMIT_RSS),      0);
-#endif
-#ifdef RLIMIT_MEMLOCK
+#if defined(RLIMIT_MEMLOCK) || defined(HAS_RLIMIT_MEMLOCK)
 	hv_store(RETVAL, "RLIMIT_MEMLOCK"  , 14, newSViv(RLIMIT_MEMLOCK),  0);
 #endif
-#ifdef RLIMIT_NPROC
+#if defined(RLIMIT_NOFILE) || defined(HAS_RLIMIT_NOFILE)
+	hv_store(RETVAL, "RLIMIT_NOFILE"   , 13, newSViv(RLIMIT_NOFILE),   0);
+#endif
+#if defined(RLIMIT_NPROC) || defined(HAS_RLIMIT_NPROC)
 	hv_store(RETVAL, "RLIMIT_NPROC"    , 12, newSViv(RLIMIT_NPROC),    0);
 #endif
-#ifdef RLIMIT_STACK
+#if defined(RLIMIT_OFILE) || defined(HAS_RLIMIT_OFILE)
+	hv_store(RETVAL, "RLIMIT_OFILE"    , 12, newSViv(RLIMIT_OFILE),    0);
+#endif
+#if defined(RLIMIT_OPEN_MAX) || defined(HAS_RLIMIT_OPEN_MAX)
+	hv_store(RETVAL, "RLIMIT_OPEN_MAX" , 15, newSViv(RLIMIT_OPEN_MAX), 0);
+#endif
+#if defined(RLIMIT_RSS) || defined(HAS_RLIMIT_RSS)
+	hv_store(RETVAL, "RLIMIT_RSS"      , 10, newSViv(RLIMIT_RSS),      0);
+#endif
+#if defined(RLIMIT_STACK) || defined(HAS_RLIMIT_STACK)
 	hv_store(RETVAL, "RLIMIT_STACK"    , 12, newSViv(RLIMIT_STACK),    0);
 #endif
-#ifdef RLIMIT_VMEM
+#if defined(RLIMIT_TCACHE) || defined(HAS_RLIMIT_TCACHE)
+	hv_store(RETVAL, "RLIMIT_TCACHE"   , 13, newSViv(RLIMIT_TCACHE),   0);
+#endif
+#if defined(RLIMIT_VMEM) || defined(HAS_RLIMIT_VMEM)
 	hv_store(RETVAL, "RLIMIT_VMEM"     , 11, newSViv(RLIMIT_VMEM),     0);
 #endif
     OUTPUT:

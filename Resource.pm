@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1995-8 Jarkko Hietaniemi. All rights reserved.
+# Copyright (c) 1995-9,2000 Jarkko Hietaniemi. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
@@ -25,11 +25,13 @@ require DynaLoader;
 	     PRIO_MIN PRIO_MAX PRIO_USER PRIO_PGRP PRIO_PROCESS
 	     getpriority setpriority
 	     RLIMIT_CPU RLIMIT_FSIZE RLIMIT_DATA
-	     RLIMIT_NOFILE RLIMIT_OPEN_MAX
+	     RLIMIT_NOFILE RLIMIT_OPEN_MAX RLIMIT_OFILE
 	     RLIMIT_AS RLIMIT_VMEM
 	     RLIMIT_STACK RLIMIT_CORE RLIMIT_RSS
 	     RLIMIT_MEMLOCK RLIMIT_NPROC
-	     RLIM_NLIMITS RLIM_INFINITY
+	     RLIMIT_AIO_MEM RLIMIT_AIO_OPS
+	     RLIMIT_TCACHE
+	     RLIM_NLIMITS RLIM_INFINITY RLIM_SAVED_CUR RLIM_SAVEWD_MAX
 	     getrlimit setrlimit
 	     RUSAGE_BOTH RUSAGE_SELF RUSAGE_CHILDREN RUSAGE_THREAD
 	     getrusage	
@@ -56,11 +58,12 @@ my $EAGAIN = constant("EAGAIN", 0);
 sub AUTOLOAD {
     if ($AUTOLOAD =~ /::(_?[a-z])/) {
         $AutoLoader::AUTOLOAD = $AUTOLOAD;
-        goto &AutoLoader::AUTOLOAD
+        goto &AutoLoader::AUTOLOAD;
     }
     local $! = 0;
     my $constname = $AUTOLOAD;
     $constname =~ s/.*:://;
+    return if $constname eq 'DESTROY';
     my $val = constant($constname, @_ ? $_[0] : 0);
     no strict 'refs';
     if ($! == 0) {
@@ -235,15 +238,25 @@ The $resource argument can be one of
         RLIMIT_NPROC		number of processes	1
 
 	RLIMIT_NOFILE		number of open files	1
+	RLIMIT_OFILE		number of open files	1
         RLIMIT_OPEN_MAX		number of open files	1
 
 	RLIMIT_AS		(virtual) address space	bytes
         RLIMIT_VMEM		virtual memory (space)	bytes
 
-What limits are available depends on the operating system. See below
-for C<get_rlimits()> on how to find out which limits are available.
-The last two pairs (C<NO_FILE>, C<OPEN_MAX>) and (C<AS>, C<VMEM>)
-are the same, the former being the BSD names and the latter SVR4 names.
+	RLIMIT_TCACHE		maximum number of	1
+				cached threads
+
+	RLIMIT_AIO_MEM		maximum memory locked	bytes
+				for POSIX AIO
+	RLIMIT_AIO_OPS		maximum number		1
+				for POSIX AIO ops
+
+B<What limits are available depends on the operating system>.
+See below for C<get_rlimits()> on how to find out which limits are
+available, for the exact documentation consult the documentation of
+your operatgiing system.  The two groups (C<NOFILE>, CC<OFILE>,
+<OPEN_MAX>) and (C<AS>, C<VMEM>) are aliases within themselves.
 
 Two meta-resource-symbols might exist
 
@@ -405,7 +418,7 @@ as values. For example:
 
 =head1 VERSION
 
-Release 1.0701, 1998-Jan-20
+Release 1.08
 
 =head1 AUTHOR
 
