@@ -1,4 +1,12 @@
-Wed Nov 20 16:42:50 2002  Jarkko Hietaniemi  <jhi@lyta.hut.fi>
+Fri Nov 22 17:57:44 2002  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Fixed a test problem found by Alain Barbet: in NetBSD
+	  the RLIM_STACK wants to be aligned.  Fixed also the
+	  other memory-related limit tests to allow for alignment.
+
+	* Release 1.19.
+
+Wed Nov 20 16:42:50 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Problem found by Jeff Boes, forwarded and analyzed
 	  by Slaven Rezic: if one has a fast machine and/or
@@ -7,6 +15,8 @@ Wed Nov 20 16:42:50 2002  Jarkko Hietaniemi  <jhi@lyta.hut.fi>
 	  problem in times.t.
 
 	* Bumped the copyright statement years.
+
+	* Release 1.18.
 
 Thu Sep 19 16:53:26 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 

@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 use Carp;
 use AutoLoader;
