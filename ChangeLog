@@ -1,4 +1,11 @@
-Wed Jan 16 02:38:54 2002  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
+Tue Jan 22 16:55:44 2002  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Alex J Avriette reported that in Darwin 5.2 the Makefile.PL
+	  dies with great noise.  Simplify the resource header scan.
+	
+	* Release 1.13.
+
+Wed Jan 16 02:38:54 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Release 1.12.
 
@@ -6,7 +13,7 @@ Wed Jan 16 02:38:54 2002  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
 	  Makefile.PL wrongly think that there be no <sys/resource.h>
 	  ($ENV{CC} set to "cc -...", which made the basename() logic fail)
 
-Fri Sep 28 05:35:16 2001  Jarkko Hietaniemi  <jhi@gamma.hut.fi>
+Fri Sep 28 05:35:16 2001  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Release 1.11.
 

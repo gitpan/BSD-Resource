@@ -68,54 +68,18 @@ sub try_compile_and_link {
     return $ok;
 }
 
-# This is unused for now.
-sub try_cpp_and_grep {
-    my ($c, %opt) = @_;
-
-    my @g;
-    my ($tmp) = "tmp$$";
-    local(*TMPC);
-
-    unlink("$tmp.c", "$tmp.o");
-
-    if (open(TMPC, ">$tmp.c")) {
-	print TMPC $c;
-	close(TMPC);
-	my $cc = $Config{'cc'};
-	$cc = basename($cc) unless -x $cc;
-	my $cccmd = "$cc -E $Config{'ccflags'} $tmp.c 2>/dev/null";
-	local(*TMPE);
-	if (open(TMPE, "$cccmd|")) {
-	    while (<TMPE>) {
-		push @g, /$opt{re}/g;
-	    }
-	    close(TMPE);
-	}
-	unlink("$tmp.c");
-    }
-    
-    @g;
-}
-
 sub has_resource_h () {
-    print "Checking that you have certain header files...\n";
+    print "Checking whether you have certain header files...\n";
+
     if (try_compile_and_link(<<EOM)) {
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
 #include <sys/resource.h>
 static int foo;
 EOM
     print "You do have <sys/resource.h>.  Excellent.\n";
     return 1;
-}
-    
-
-    if (try_compile_and_link(<<EOM)) {
-#include <sys/types.h>
-#include <sys/time.h> 
-#include <sys/resource.h>
-static int foo;
-EOM
-    print "You have <sys/resource.h> but you want some extra headers.  That's okay.\n";
-    return 2;
 }
     
     # Solaris 1 weirdo header
@@ -124,8 +88,8 @@ EOM
 #include <sys/rusage.h>
 static int foo;
 EOM
-    print "You have <sys/rusage.h>.  Are you an old Solaris?.\n";
-    return 3;
+    print "You have <sys/rusage.h>.  Are you an old Solaris by any chance?\n";
+    return 2;
 }
 
     return 0;
