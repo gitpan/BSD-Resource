@@ -272,7 +272,7 @@ In list context C<getrlimit()> returns the current soft and hard resource
 limits as a list.  On failure it returns an empty list.
 
 Processes have soft and hard resource limits.  On crossing the soft
-limit they receive a signal (for example the C<XCPU> or C<XFSZ>,
+limit they receive a signal (for example the C<SIGXCPU> or C<SIGXFSZ>,
 corresponding to the C<RLIMIT_CPU> and C<RLIMIT_FSIZE>, respectively).
 The processes can trap and handle some of these signals, please see
 L<perlipc/Signals>.  After the hard limit the processes will be
@@ -282,7 +282,7 @@ B<NOTE>: the level of 'support' for a resource varies. Not all the systems
 
 	a) even recognise all those limits
 	b) really track the consumption of a resource
-	c) care (send those signals) if a resource limit get exceeded
+	c) care (send those signals) if a resource limit is exceeded
 
 Again, please consult your usual C programming documentation.
 
@@ -398,6 +398,20 @@ as values. For example:
 
 	$r = get_rlimits();
 	print "ok.\n" if ($r->{'RLIM_STACK'} == RLIM_STACK);
+
+=head1 ERRORS
+
+=over 4
+
+=item *
+
+	Your vendor has not defined BSD::Resource macro RLIMIT_...
+
+The code tried to call getrlimit/setrlimit for a resource limit that
+your operating system vendor/supplier does not support.  Portable code
+should use get_rlimits() to check which resource limits are defined.
+
+=back
 
 =head1 EXAMPLES
 

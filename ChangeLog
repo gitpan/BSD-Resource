@@ -1,4 +1,17 @@
-Sat Apr 15 23:45:06 2000  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
+Mon Oct 30 22:39:40 2000  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Release 1.09.
+
+	  Fixed to work with 5.6.0 and Solaris: the default setting
+	  of Perl 5.6.0 is to use "large files", which does not mix with
+	  the Solaris /procfs interface.  Workaround: use the old trusty
+	  syscall().  The deficiency reported to Solaris kernel group,
+	  so there's hope that in some future patch/release the procfs
+	  will get fixed.
+
+	  Document the "Your vendor has not ..." error message.
+
+Sat Apr 15 23:45:06 2000  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Release 1.08: (about time)
 
@@ -9,7 +22,7 @@ Sat Apr 15 23:45:06 2000  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
 	  Added a few possible RLIMIT_ constants (RLIMIT_AIO_MEM,
 	  RLIMIT_AIO_OP, RLIMIT_OFILE, RLIMIT_TCACHE).
 
-Fri Jan 16 15:47:19 1998  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
+Fri Jan 16 15:47:19 1998  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Release 1.07:
 
@@ -18,7 +31,7 @@ Fri Jan 16 15:47:19 1998  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
     	  Major Solaris 5.[56] hackery to use the /proc.
 	  Don't know whether older Solarises work anymore :-/
 
-Mon Jun  2 13:32:54 1997  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
+Mon Jun  2 13:32:54 1997  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Release 1.06:
 

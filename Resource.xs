@@ -23,8 +23,9 @@
 /* if this fails your vendor has failed you and Perl cannot help. */
 #include <sys/resource.h>
 
-#if defined(__sun__) && defined(__svr4__)
+#if defined(__sun__) && defined(__svr4__) && !defined(SOLARIS_NO_PROCFS)
 #   define SOLARIS
+#   define SOLARIS_PROCFS
 #   ifdef I_SYS_RUSAGE
 #       include <sys/rusage.h>
 /* Some old Solarises have no RUSAGE_* defined in <sys/resource.h>.
@@ -34,7 +35,7 @@
 #   endif
 /* Solaris uses timerstruc_t in struct rusage. According to the <sys/time.h>
  * in old Solarises tv_nsec in the timerstruc_t is nanoseconds (and the name
- * also supports that theory) BUT getrusage() seems after al to tick
+ * also supports that theory) BUT getrusage() seems after all to tick
  * microseconds, not nano. */
 #   define part_in_sec 0.000001
 #
@@ -57,6 +58,12 @@
 #       define Struct_psinfo  struct prpsinfo
 #       define Struct_pstatus struct prstatus
 #   endif
+#endif
+
+#ifdef SOLARIS_NO_PROCFS
+#   define SOLARIS
+#   undef SOLARIS_PROCFS
+#   define TRY_GETRUSAGE_SYS_SYSCALL
 #endif
 
 #ifdef I_SYS_TIME
@@ -87,7 +94,7 @@
 
 #if defined(__hpux) && defined(RLIMIT_NLIMITS)
 /* there is getrusage() in HPUX but only as an indirect syscall */
-#   define try_getrusage_as_syscall
+#   define TRY_GETRUSAGE_AS_SYSCALL
 /* some rlimits exist (but are officially unsupported by HP) */
 #   define RLIMIT_CPU      0
 #   define RLIMIT_FSIZE    1
@@ -115,26 +122,26 @@
 #endif
 
 #if !defined(RLIMIT_OPEN_MAX) && defined(RLIMIT_NOFILE)
-#define RLIMIT_OPEN_MAX RLIMIT_NOFILE
+#   define RLIMIT_OPEN_MAX RLIMIT_NOFILE
 #endif
 
 #if !defined(RLIMIT_NOFILE) && defined(RLIMIT_OPEN_MAX)
-#define RLIMIT_NOFILE RLIMIT_OPEN_MAX
+#   define RLIMIT_NOFILE RLIMIT_OPEN_MAX
 #endif
 
 #if !defined(RLIMIT_OFILE) && defined(RLIMIT_NOFILE)
-#define RLIMIT_OFILE RLIMIT_NOFILE
+#   define RLIMIT_OFILE RLIMIT_NOFILE
 #endif
 
 #if !defined(RLIMIT_VMEM) && defined(RLIMIT_AS)
-#define RLIMIT_VMEM RLIMIT_AS
+#   define RLIMIT_VMEM RLIMIT_AS
+#else
+#   if !defined(RLIMIT_AS) && defined(RLIMIT_VMEM)
+#       define RLIMIT_AS RLIMIT_VMEM
+#   endif
 #endif
 
-#if !defined(RLIMIT_AS) && defined(RLIMIT_VMEM)
-#define RLIMIT_AS RLIMIT_VMEM
-#endif
-
-#ifdef try_getrusage_as_syscall
+#ifdef TRY_GETRUSAGE_AS_SYSCALL
 #   include <sys/syscall.h>
 #   if defined(SYS_GETRUSAGE)
 #       define getrusage(a, b)	syscall(SYS_GETRUSAGE, (a), (b))
@@ -460,7 +467,7 @@ _getrusage(who = RUSAGE_SELF)
     PPCODE:
 	{
 	  struct rusage ru;
-#ifdef SOLARIS
+#ifdef SOLARIS_PROCFS
 	  Struct_psinfo  psi;
 	  Struct_pstatus pst;
 	  struct prusage pru;

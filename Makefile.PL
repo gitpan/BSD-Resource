@@ -8,7 +8,7 @@
 require 5.001;
 
 $PACKAGE = 'BSD::Resource';
-$VERSION = 1.08;
+$VERSION = 1.09;
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -82,7 +82,7 @@ EOM
 static int foo;
 EOM
 
-    # Solaris 1 wierdo
+    # Solaris 1 weirdo header
 
     return 3 if
     try_compile_and_link(<<EOM);
@@ -142,6 +142,23 @@ EOM
 
 sub configure {
     find_Rlim_t;
+    if ($^O eq 'solaris' &&
+	$Config{ccflags} =~ /-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64/ &&
+	$Config{use64bitall} ne 'define') {
+	if (open(PROCFS, "/usr/include/sys/procfs.h")) {
+	    my $noprocfs;
+	    while (<PROCFS>) {
+		if (/^#error.*Cannot use.*procfs.*large file.*/) {
+		    $noprocfs = 1;
+		    last;
+		}
+	    }
+	    close(PROCFS);
+	    if ($noprocfs) {
+		$DEFINE .= ' -DSOLARIS_NO_PROCFS';
+	    }
+	}
+    }
 }
 
 sub doMakefile {
