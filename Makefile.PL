@@ -8,7 +8,7 @@
 require 5.001;
 
 $PACKAGE = 'BSD::Resource';
-$VERSION = '1.07.00';
+$VERSION = 1.0701;
 
 use Config;
 use ExtUtils::MakeMaker;

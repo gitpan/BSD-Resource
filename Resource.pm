@@ -203,13 +203,14 @@ updated.
 For example B<Solaris 1> claims in C<E<lt>sys/rusage.hE<gt>> that the
 C<ixrss> and the C<isrss> fields are always zero.
 
-In SunOS 5.6 the getrusage() leaves most of the fiels zero and
-therefore getrusage() is not even used, instead of that the proc
-interface is used.  The mapping is not perfect: the maxrss field is
-really the B<current> resident size instead of the maximum, the idrss
-is really the B<current> heap size instead of the integral data, the
-isrss is really the B<current> stack size instead of the integral
-stack.  The ixrss has no sensible counterpart at all so it stays zero.
+In B<SunOS 5.5 and 5.6> the getrusage() leaves most of the fiels zero
+and therefore getrusage() is not even used, instead of that the
+B</proc> interface is used.  The mapping is not perfect: the maxrss
+field is really the B<current> resident size instead of the maximum,
+the idrss is really the B<current> heap size instead of the integral
+data, the isrss is really the B<current> stack size instead of the
+integral stack.  The ixrss has no sensible counterpart at all so it
+stays zero.
 
 =head2 getrlimit
 
@@ -361,13 +362,15 @@ usually slightly better time granularity than the times() by Perl
 core.  The time granularity of the latter is usually 1/60 seconds
 while the former may achieve submilliseconds.
 
-B<NOTE: The current implementation uses two getrusage() system calls:
+B<NOTE>: The current implementation uses two getrusage() system calls:
 one with RUSAGE_SELF and one with RUSAGE_CHILDREN.  Therefore the
 operation is not `atomic': the times for the children are recorded
-a little bit later.>
+a little bit later.
 
-B<NOTE: times() is not imported by default by BSD::Resource.
-  You need to tell that you want to use it.>
+B<NOTE>: times() is not imported by default by BSD::Resource.
+  You need to tell that you want to use it.
+
+B<NOTE: This is not a real BSD function.>
 
 =head2 get_rlimits
 
@@ -402,7 +405,7 @@ as values. For example:
 
 =head1 VERSION
 
-Release 1.07.00, 1998-Jan-16
+Release 1.0701, 1998-Jan-20
 
 =head1 AUTHOR
 
