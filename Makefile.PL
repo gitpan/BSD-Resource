@@ -8,7 +8,7 @@
 require 5.001;
 
 $PACKAGE = 'BSD::Resource';
-$VERSION = '1.06';
+$VERSION = '1.07.00';
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -111,7 +111,7 @@ EOM
 	}
 
 	print "to have rlim_t defined. (";
-	print $worrynot ? "this is ok" : "which is nice";
+	print $worrynot ? "this is okay" : "which is nice";
 	print ")\n\n";
 }
 
@@ -151,7 +151,7 @@ print  <<EOM;
 
 Note: you may safely ignore the possible message:
 
-	Please specify prototyping behavior for Resource.xs (see perlxs manual)
+  Please specify prototyping behavior for Resource.xs (see perlxs manual)
 
 It is nothing serious.
 EOM

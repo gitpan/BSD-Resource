@@ -1,3 +1,12 @@
+Fri Jan 16 15:47:19 1998  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
+
+	* Release 1.07:
+
+	  Added pseudo-times().
+
+    	  Major Solaris 5.[56] hackery to use the /proc.
+	  Don't know whether older Solarises work anymore :-/
+
 Mon Jun  2 13:32:54 1997  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
 
 	* Release 1.06:

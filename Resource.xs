@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995-7 Jarkko Hietaniemi. All rights reserved.
+ * Copyright (c) 1995-8 Jarkko Hietaniemi. All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the same terms as Perl itself.
  *
@@ -28,6 +28,26 @@
  * also supports that theory) BUT getrusage() seems after al to tick
  * microseconds, not nano. */
 #   define part_in_sec 0.000001
+#
+/* Newer Solarises (5.5, 5.6) have much better support for rusage-kinda
+ * things via the proc interface. */
+#   define _STRUCTURED_PROC 1
+#   include <sys/procfs.h>
+#   include <fcntl.h>
+
+#   ifdef PIOCUSAGE
+#       undef SOLARIS_STRUCTURED_PROC
+#   else
+#       define SOLARIS_STRUCTURED_PROC
+#   endif
+
+#   ifdef SOLARIS_STRUCTURED_PROC
+#       define Struct_psinfo  struct psinfo
+#       define Struct_pstatus struct pstatus
+#   else
+#       define Struct_psinfo  struct prpsinfo
+#       define Struct_pstatus struct prstatus
+#   endif
 #endif
 
 #ifdef I_SYS_TIME
@@ -278,6 +298,12 @@ int arg;
 	    break;
 	 }
 	if (strnEQ(name, "RUSAGE_", 7)) {
+	    if (strEQ(name, "RUSAGE_BOTH"))
+#ifdef RUSAGE_BOTH
+		return RUSAGE_BOTH;
+#else
+		goto not_there;
+#endif
 	    if (strEQ(name, "RUSAGE_SELF"))
 #ifdef RUSAGE_SELF
 		return RUSAGE_SELF;
@@ -352,25 +378,147 @@ _getrusage(who = RUSAGE_SELF)
     PPCODE:
 	{
 	  struct rusage ru;
-	  if (getrusage(who, &ru) == 0) {
-	    EXTEND(sp, 16);
-	    PUSHs(sv_2mortal(newSVnv(TV2DS(ru.ru_utime))));
-	    PUSHs(sv_2mortal(newSVnv(TV2DS(ru.ru_stime))));
-	    PUSHs(sv_2mortal(newSViv(ru.ru_maxrss)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_ixrss)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_idrss)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_isrss)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_minflt)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_majflt)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_nswap)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_inblock)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_oublock)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_msgsnd)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_msgrcv)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_nsignals)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_nvcsw)));
-	    PUSHs(sv_2mortal(newSVnv(ru.ru_nivcsw)));
-	  }
+#ifdef SOLARIS
+	  Struct_psinfo  psi;
+	  Struct_pstatus pst;
+	  struct prusage pru;
+	  pid_t  pid = getpid();
+	  int    res, fd;
+	  char psib[40], pstb[40], prub[40];
+	  ru.ru_utime.tv_sec   = 0;
+	  ru.ru_utime.tv_usec  = 0;
+	  ru.ru_stime.tv_sec   = 0;
+	  ru.ru_stime.tv_usec  = 0;
+          ru.ru_maxrss   = 0;
+          ru.ru_ixrss    = 0;
+	  ru.ru_idrss    = 0;
+	  ru.ru_isrss    = 0;
+	  ru.ru_minflt   = 0;
+	  ru.ru_majflt   = 0;
+	  ru.ru_nswap    = 0;
+	  ru.ru_inblock  = 0;
+	  ru.ru_oublock  = 0;
+	  ru.ru_msgsnd   = 0;
+	  ru.ru_msgrcv   = 0;
+	  ru.ru_nsignals = 0;
+       	  ru.ru_nvcsw    = 0;
+	  ru.ru_nivcsw   = 0;
+#   ifndef SOLARIS_STRUCTURED_PROC
+/* The time fields come okay from getrusage() but would be bad
+ * from PIOCUSAGE.  Argh. */
+	  res = getrusage(who, &ru);
+	  if (res)
+	     goto failed;
+#   endif
+/* With 64-bit pids "/proc/18446744073709551616/psinfo" takes 34 bytes. */
+	  sprintf(psib, "/proc/%d", pid);
+	  sprintf(pstb, "/proc/%d", pid);
+	  sprintf(prub, "/proc/%d", pid);
+#   ifdef SOLARIS_STRUCTURED_PROC
+	  res = strlen(psib);
+	  sprintf(psib + res, "/psinfo");
+	  sprintf(pstb + res, "/status");
+	  sprintf(prub + res, "/usage" );
+#   endif
+	  fd = open(psib, O_RDONLY);
+	  if (fd >= 0) {
+#   ifdef SOLARIS_STRUCTURED_PROC
+	      res = read(fd, &psi, sizeof(psi));
+              if (res == sizeof(psi))
+	          ru.ru_maxrss = psi.pr_rssize * 1024;
+              else
+                  goto failed;
+#   else  
+	      res = ioctl(fd, PIOCPSINFO, &psi);
+	      if (res != -1)
+		  ru.ru_maxrss = psi.pr_byrssize;
+              else
+                  goto failed;
+#   endif
+              close(fd);
+          } else
+	    goto failed;
+	  fd = open(pstb, O_RDONLY);
+	  if (fd >= 0) {
+#   ifdef SOLARIS_STRUCTURED_PROC
+	      res = read(fd, &pst, sizeof(pst));
+              res = res == sizeof(pst) ? 1 : 0;
+#   else  
+	      res = ioctl(fd, PIOCUSAGE, &pst);
+	      res = res == -1 ? 0 : 1;
+#   endif
+	      if (res) {
+#   ifdef SOLARIS_STRUCTURED_PROC
+/* Structured proc seems to have okay values in struct psinfo but
+ * zero values from the earlier getrusage() so get the better ones. */
+	          if (who == RUSAGE_SELF) {
+		      ru.ru_utime.tv_sec   = pst.pr_utime.tv_sec;
+		      ru.ru_utime.tv_usec  = pst.pr_utime.tv_nsec  / 1000;
+		      ru.ru_stime.tv_sec   = pst.pr_stime.tv_sec;
+		      ru.ru_stime.tv_usec  = pst.pr_stime.tv_nsec  / 1000;
+	          } else if (who == RUSAGE_CHILDREN) {
+		      ru.ru_utime.tv_sec   = pst.pr_cutime.tv_sec;
+		      ru.ru_utime.tv_usec  = pst.pr_cutime.tv_nsec  / 1000;
+		      ru.ru_stime.tv_sec   = pst.pr_cstime.tv_sec;
+		      ru.ru_stime.tv_usec  = pst.pr_cstime.tv_nsec  / 1000;
+                  }
+#   endif
+                  /* Current values, not really integrals. */
+	          ru.ru_idrss = pst.pr_brksize;
+	          ru.ru_isrss = pst.pr_stksize;
+	      } else
+	          goto failed;
+              close(fd);
+          } else
+              goto failed;
+	  fd = open(prub, O_RDONLY);
+	  if (fd >= 0) {
+#   ifdef SOLARIS_STRUCTURED_PROC
+	      res = read(fd, &pru, sizeof(pru));
+              res = res == sizeof(pru) ? 1 : 0;
+#   else  
+	      res = ioctl(fd, PIOCUSAGE, &pru);
+	      res = res == -1 ? 0 : 1;
+#   endif
+	      if (res) {
+		  ru.ru_minflt   = pru.pr_minf;
+		  ru.ru_majflt   = pru.pr_majf;
+		  ru.ru_nswap    = pru.pr_nswap;
+		  ru.ru_inblock  = pru.pr_inblk;
+		  ru.ru_oublock  = pru.pr_oublk;
+		  ru.ru_msgsnd   = pru.pr_msnd;
+		  ru.ru_msgrcv   = pru.pr_mrcv;
+		  ru.ru_nsignals = pru.pr_sigs;
+		  ru.ru_nvcsw    = pru.pr_vctx;
+		  ru.ru_nivcsw   = pru.pr_ictx;
+	      } else
+	          goto failed;
+              close(fd);
+	  } else
+	      goto failed;
+#else
+	  if (getrusage(who, &ru))
+              goto failed;
+#endif
+          EXTEND(sp, 16);
+          PUSHs(sv_2mortal(newSVnv(TV2DS(ru.ru_utime))));
+	  PUSHs(sv_2mortal(newSVnv(TV2DS(ru.ru_stime))));
+	  PUSHs(sv_2mortal(newSViv(ru.ru_maxrss)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_ixrss)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_idrss)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_isrss)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_minflt)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_majflt)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_nswap)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_inblock)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_oublock)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_msgsnd)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_msgrcv)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_nsignals)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_nvcsw)));
+	  PUSHs(sv_2mortal(newSVnv(ru.ru_nivcsw)));
+	failed:
+          ;
 	}
 
 void

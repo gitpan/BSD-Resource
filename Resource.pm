@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1995-7 Jarkko Hietaniemi. All rights reserved.
+# Copyright (c) 1995-8 Jarkko Hietaniemi. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
@@ -31,15 +31,14 @@ require DynaLoader;
 	     RLIMIT_MEMLOCK RLIMIT_NPROC
 	     RLIM_NLIMITS RLIM_INFINITY
 	     getrlimit setrlimit
-	     RUSAGE_SELF RUSAGE_CHILDREN RUSAGE_THREAD
+	     RUSAGE_BOTH RUSAGE_SELF RUSAGE_CHILDREN RUSAGE_THREAD
 	     getrusage	
 	     get_rlimits
 );
 
 Exporter::export_tags();
 
-@EXPORT_OK = qw(
-);
+@EXPORT_OK = qw(times);
 
 # Grandfather old foo_h form to new :foo_h form
 sub import {
@@ -81,6 +80,8 @@ sub AUTOLOAD {
     goto &$AUTOLOAD;
 }
 use strict;
+
+=pod
 
 =head1 NAME
 
@@ -151,21 +152,22 @@ running.
 On some systems (those supporting both getrusage() and the POSIX
 threads) there is also C<RUSAGE_THREAD>. The BSD::Resource supports the
 C<RUSAGE_THREAD> if it is present but understands nothing more about the
-POSIX threads themselves.
+POSIX threads themselves.  Similarly for C<RUSAGE_BOTH>: some systems
+support retrieving the sums of the self and child resource consumptions
+simultaneously.
 
 In list context getrusage() returns the current resource usages as a
 list. On failure it returns an empty list.
 
 The elements of the list are, in order:
-
 	index	name		meaning usually (quite system dependent)
 
 	 0	utime		user time
 	 1	stime		system time
-    	 2	maxrss		maximum shared memory
+    	 2	maxrss		maximum shared memory or current resident set
 	 3	ixrss		integral shared memory
-	 4	idrss		integral unshared data
-	 5	isrss		integral unshared stack
+	 4	idrss		integral or current unshared data
+	 5	isrss		integral or current unshared stack
 	 6	minflt		page reclaims
 	 7	majflt		page faults
     	 8	nswap		swaps
@@ -196,8 +198,18 @@ the time being, it does seem to.
 
 Note 2: Because not all kernels are BSD and also because of the sloppy
 support of getrusage() by many vendors many of the values may not be
-updated. For example B<Solaris 1> claims in C<E<lt>sys/rusage.hE<gt>>
-that the C<ixrss> and the C<isrss> fields are always zero.
+updated.
+
+For example B<Solaris 1> claims in C<E<lt>sys/rusage.hE<gt>> that the
+C<ixrss> and the C<isrss> fields are always zero.
+
+In SunOS 5.6 the getrusage() leaves most of the fiels zero and
+therefore getrusage() is not even used, instead of that the proc
+interface is used.  The mapping is not perfect: the maxrss field is
+really the B<current> resident size instead of the maximum, the idrss
+is really the B<current> heap size instead of the integral data, the
+isrss is really the B<current> stack size instead of the integral
+stack.  The ixrss has no sensible counterpart at all so it stays zero.
 
 =head2 getrlimit
 
@@ -219,10 +231,10 @@ The $resource argument can be one of
         RLIMIT_RSS		resident set size	bytes
     	RLIMIT_MEMLOCK		memory locked data size	bytes
 
-        RLIMIT_NPROC		number of processes	-
+        RLIMIT_NPROC		number of processes	1
 
-	RLIMIT_NOFILE		number of open files	-
-        RLIMIT_OPEN_MAX		number of open files	-
+	RLIMIT_NOFILE		number of open files	1
+        RLIMIT_OPEN_MAX		number of open files	1
 
 	RLIMIT_AS		(virtual) address space	bytes
         RLIMIT_VMEM		virtual memory (space)	bytes
@@ -338,6 +350,25 @@ A normal user process can only lower its priority (make it more positive).
 
 B<NOTE>: A successful call returns C<1>, a failed one C<0>.
 
+=head2 times
+
+	use BSD::Resource qw(times);
+
+	($user, $system, $child_user, $child_system) = times();
+
+The BSD::Resource module offers a times() implementation that has
+usually slightly better time granularity than the times() by Perl
+core.  The time granularity of the latter is usually 1/60 seconds
+while the former may achieve submilliseconds.
+
+B<NOTE: The current implementation uses two getrusage() system calls:
+one with RUSAGE_SELF and one with RUSAGE_CHILDREN.  Therefore the
+operation is not `atomic': the times for the children are recorded
+a little bit later.>
+
+B<NOTE: times() is not imported by default by BSD::Resource.
+  You need to tell that you want to use it.>
+
 =head2 get_rlimits
 
 	$rlimits = get_rlimits();
@@ -371,7 +402,7 @@ as values. For example:
 
 =head1 VERSION
 
-Release 1.06, June 1997
+Release 1.07.00, 1998-Jan-16
 
 =head1 AUTHOR
 
@@ -455,6 +486,15 @@ sub setrlimit ($$$) {
 
 sub setpriority (;$$$) {
     _setpriority(@_);
+}
+
+sub times {
+    use BSD::Resource qw(RUSAGE_SELF RUSAGE_CHILDREN);
+
+    my ($u,  $s ) = _getrusage(RUSAGE_SELF);
+    my ($cu, $cs) = _getrusage(RUSAGE_CHILDREN);
+
+    return ($u, $s, $cu, $cs);
 }
 
 1;

@@ -40,9 +40,9 @@ sub test {
     push(@test,
 	 ($set == 0
 	  or
-	  $nowsoft != $newsoft
+	  ($nowsoft != $newsoft and $newsoft > 0 and $nowsoft > 0)
 	  or
-	  $nowhard != $newhard
+	  ($nowhard != $newhard and $newhard > 0 and $nowhard > 0)
 	  ));
   }
 }

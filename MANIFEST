@@ -7,6 +7,7 @@ t/getrlimit.t
 t/setrlimit.t
 t/getpriority.t
 t/setpriority.t
+t/times.t
 README
 ChangeLog
 INSTALL

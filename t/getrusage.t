@@ -44,7 +44,13 @@ sleep($nap);	# this sleep because we want some real time to pass
 
 # burn some time and CPU
 
-for (1..1000) { $x = 'x' x 1000; $x = time() }
+sub fac { $_[0] < 2 ? 1 : $_[0] * fac($_[0] - 1) }
+
+for (1..10000) { $x = 'x' x 10000; $x = time() }
+
+fac(10);
+fac(15);
+fac(20);
 
 $real = time() - $time0;
 
@@ -72,6 +78,7 @@ if ($debug) {
   print "# ruc = $ruc, tsc = $tsc\n";
   print "# real = $real\n";
 }
+
 print 'not '
   if (far($ruu, $tsu, 0.20)
       or
@@ -82,7 +89,7 @@ print "ok 1\n";
 
 # burn some time and CPU once more
 
-for (1..1000) { $x = 'x' x 1000; $x = time() }
+for (1..10000) { $x = 'x' x 10000; $x = time() }
 
 $ru = getrusage();
 @ru = getrusage();
