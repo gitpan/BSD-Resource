@@ -1,3 +1,16 @@
+Thu Sep 19 16:53:26 2002  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Patch from Miles Egan to use -I$archlib/CORE instead
+	  of -I$installarchlib/CORE in Makefile.PL, since they
+	  might be different but the first one is the one apps
+	  are supposed to be using.
+
+	* Sanity check for getrlimit/setrlimit/getpriority/setpriority
+	  so that one won't use the string "RLIMIT_..."/"PRIO_..." when
+	  one is supposed to be using the constant RLIMIT_.../PRIO_...
+
+	* Release 1.17.
+
 Sun Sep 15 18:44:36 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Patch from Allen Smith to avoid -lbsd in IRIX

@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.16';
+$VERSION = '1.17';
 
 use Carp;
 use AutoLoader;
@@ -407,11 +407,25 @@ as values. For example:
 
 =item *
 
-	Your vendor has not defined BSD::Resource macro RLIMIT_...
+	Your vendor has not defined BSD::Resource macro ...
 
 The code tried to call getrlimit/setrlimit for a resource limit that
 your operating system vendor/supplier does not support.  Portable code
 should use get_rlimits() to check which resource limits are defined.
+
+=item *
+
+	use PRIO..., not "PRIO_..."
+
+getpriority() and setpriority() use symbolic names, not strings,
+for the constants.
+
+=item *
+
+	use RLIMIT..., not "RLIMIT_..."
+
+getrlimit() and setrlimit() use symbolic names, not strings,
+for the constants.
 
 =back
 
@@ -489,6 +503,7 @@ sub nvcsw    { _g($_[0], 'nvcsw'   ) }
 sub nivcsw   { _g($_[0], 'nivcsw'  ) }
 
 sub getrlimit ($) {
+    croak 'getrlimit: use RLIMIT_..., not "RLIMIT_..."' if $_[0] =~ /^RLIMIT_/;
     my @rlimit = _getrlimit($_[0]);
 
     if (wantarray) {
@@ -513,14 +528,19 @@ sub get_rlimits () {
 }
 
 sub getpriority (;$$) {
+    croak 'setpriority: use PRIO_..., not "PRIO_..."'
+	if @_ && $_[0] =~ /^PRIO_/;
     _getpriority(@_);
 }
 
 sub setrlimit ($$$) {
+    croak 'setrlimit: use RLIMIT_..., not "RLIMIT_..."' if $_[0] =~ /^RLIMIT_/;
     _setrlimit($_[0], $_[1], $_[2]);
 }
 
 sub setpriority (;$$$) {
+    croak 'setpriority: use PRIO_..., not "PRIO_..."'
+	if @_ && $_[0] =~ /^PRIO_/;
     _setpriority(@_);
 }
 
