@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1995-9,2000 Jarkko Hietaniemi. All rights reserved.
+# Copyright (c) 1995-9,2001 Jarkko Hietaniemi. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
@@ -10,8 +10,10 @@ require 5.002;
 
 package BSD::Resource;
 
-use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD);
 use strict;
+use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
+
+$VERSION = '1.10';
 
 use Carp;
 use AutoLoader;

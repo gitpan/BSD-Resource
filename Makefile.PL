@@ -5,10 +5,9 @@
 # the contents of the Makefile that is written.
 #
 
-require 5.001;
+require 5.002;
 
 $PACKAGE = 'BSD::Resource';
-$VERSION = 1.09;
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -101,7 +100,7 @@ There is no way $PACKAGE is going to work.
 
 I am awfully sorry but I cannot go further.
 
-Aborting configuration of $PACKAGE $VERSION.
+Aborting configuration of $PACKAGE.
 EOM
 
     $DEFINE = '';
@@ -168,39 +167,28 @@ Note: it is ok if none of the libraries '@$LIBS' is found.
 
 EOM
     WriteMakefile(
-    'NAME'	=> $PACKAGE,
-    'VERSION'	=> $VERSION,
-    'LIBS'	=> $LIBS,
-    'DEFINE'	=> $DEFINE,
+    'NAME'		=> $PACKAGE,
+    'VERSION_FROM'	=> 'Resource.pm',
+    'LIBS'		=> $LIBS,
+    'DEFINE'		=> $DEFINE,
 # do not even think about 'INC' => '-I/usr/ucbinclude', Solaris will avenge.
-    'dist'      => { 'COMPRESS' => 'gzip' },
+    'dist'      	=> { 'COMPRESS' => 'gzip' },
 );
 }
 
 sub main {
     print <<EOM;
 
-Configuring $PACKAGE $VERSION...
+Configuring $PACKAGE...
 
 EOM
 
     init;
     configure;
     doMakefile;
-    if ($] > 5.001 &&
-	(! -e 'Resource.c' || -M 'Resource.xs' < -M 'Resource.c' )) {
 print  <<EOM;
 
-Note: you may safely ignore the possible message:
-
-  Please specify prototyping behavior for Resource.xs (see perlxs manual)
-
-It is nothing serious.
-EOM
-    }
-print  <<EOM;
-
-Done configuring $PACKAGE $VERSION.
+Done configuring $PACKAGE.
 
 Now you may issue 'make'.  Do not forget also 'make test'.
 

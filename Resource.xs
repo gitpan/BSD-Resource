@@ -425,8 +425,7 @@ not_there:
 
 MODULE = BSD::Resource		PACKAGE = BSD::Resource
 
-# No, I won't. 5.001m xsubpp chokes on this.
-# PROTOTYPES: enable
+PROTOTYPES: enable
 
 double
 constant(name,arg)
