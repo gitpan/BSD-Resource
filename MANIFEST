@@ -8,5 +8,5 @@ t/setrlimit.t
 t/getpriority.t
 t/setpriority.t
 README
-PLATFORMS
+ChangeLog
 INSTALL

@@ -371,7 +371,7 @@ as values. For example:
 
 =head1 VERSION
 
-Release 1.0501, April 1997
+Release 1.06, June 1997
 
 =head1 AUTHOR
 

@@ -8,7 +8,7 @@
 require 5.001;
 
 $PACKAGE = 'BSD::Resource';
-$VERSION = '1.05_02';
+$VERSION = '1.06';
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -131,6 +131,7 @@ EOM
     'LIBS'	=> $LIBS,
     'DEFINE'	=> $DEFINE,
 # do not even think about 'INC' => '-I/usr/ucbinclude', Solaris will avenge.
+    'dist'      => { 'COMPRESS' => 'gzip' },
 );
 }
 
@@ -159,7 +160,7 @@ print  <<EOM;
 
 Done configuring $PACKAGE $VERSION.
 
-Now you may issue 'make'. Do not forget also 'make test'.
+Now you may issue 'make'.  Do not forget also 'make test'.
 
 EOM
 }
