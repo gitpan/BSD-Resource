@@ -111,6 +111,11 @@ EOM
 
     $DEFINE = '';
 
+    # Needed for NCR MP-RAS; should be harmless for others.
+    if ($Config{'osname'} eq 'svr4') {
+      $DEFINE = ' -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1';
+    }
+
     # old Solarises had this oddity.
     $DEFINE .= ' -DI_SYS_RUSAGE' if (-r '/usr/include/sys/rusage.h');
 
@@ -121,6 +126,8 @@ EOM
 	     ($Config{'ccflags'} =~ m/-D_BSD_TIME/) &&
 	     ($Config{'ccflags'} =~ m/-D_BSD_TYPES/)) {
       $LIBS = [''];
+    } elsif ($Config{'osname'} eq 'svr4') {
+      $LIBS = ['-lc89'];
     }
 }
 

@@ -23,7 +23,7 @@ sub fac { $_[0] < 2 ? 1 : $_[0] * fac($_[0] - 1) }
 my $t0 = time();
 while (time() - $t0 < 3) {
   for (1..1E4) { my $x = time() x $_}
-  for (1..1E3) { mkdir "x"; rmdir "x" }
+  for (1..1E3) { mkdir "x", 0777; rmdir "x" }
 }
 
 fac(10);
@@ -96,7 +96,7 @@ print "ok 1\n";
 $t0 = time();
 while (time() - $t0 < 3) {
   for (1..1E4) { my $x = time() x $_ }
-  for (1..1E3) { mkdir "x"; rmdir "x" }
+  for (1..1E3) { mkdir "x", 0777; rmdir "x" }
 }
 
 $ru = getrusage();

@@ -19,7 +19,7 @@ print "1..2\n";
 my $t0 = time();
 while  (time() - $t0 < 5) {
   for (1..1E4) { my $x = time() x $_ }
-  for (1..1E3) { mkdir "x"; rmdir "x" }
+  for (1..1E3) { mkdir "x", 0777; rmdir "x" }
 }
 
 sleep(2);

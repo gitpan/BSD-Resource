@@ -1,3 +1,9 @@
+Thu Dec 12 01:15:44 2002  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Patches for NCR MP-RAS from grommel@sears.com.
+	
+	* Release 1.21.
+
 Tue Nov 26 04:20:38 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Add a warning about the time/load-sensitivity of the
