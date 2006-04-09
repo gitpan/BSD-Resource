@@ -1,3 +1,17 @@
+2006-04-09  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Address rt.cpan.org #13131: setrlimit.t tries to increase hard
+	  limits, cannot raise limits higher than the hard limit.
+
+	* Address rt.cpan.org #13130: getpriority.t and setpriority.t
+	  assume priority = 0, solution hopefully portable.  Now should
+	  work under e.g. "nice make test".
+	
+	* Add more verbosity to the case of the known rlimit.t test
+	  failure in Mac OS X.
+	
+	* Release 1.25.
+
 Sun Feb 29 16:51:34 2004  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* No functional changes but document the known fact that

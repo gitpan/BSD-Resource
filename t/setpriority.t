@@ -8,17 +8,21 @@ $debug = 1;
 
 print "1..3\n";
 
-$gotlower = setpriority(PRIO_PROCESS, 0, 5);
+$origprio = getpriority(PRIO_PROCESS, 0);
 
-print "# gotlower = $gotlower\n" if ($debug);
+print "# origprio = $origprio ($!)\n" if ($debug);
+
+$gotlower = setpriority(PRIO_PROCESS, 0, $origprio + 1);
+
+print "# gotlower = $gotlower ($!)\n" if ($debug);
 
 # we must use getpriority() to find out whether setpriority() really worked
 
 $lowerprio = getpriority(PRIO_PROCESS, 0);
 
-print "# lowerprio = $lowerprio\n" if ($debug);
+print "# lowerprio = $lowerprio ($!)\n" if ($debug);
 
-$fail = (not $gotlower or not $lowerprio == 5);
+$fail = (not $gotlower or not $lowerprio == $origprio + 1);
 
 print 'not '
   if ($fail);
@@ -28,24 +32,29 @@ if ($fail) {
   print "# gotlower = $gotlower, lowerprio = $lowerprio\n";
 }
 
-$gotlower = setpriority();
+if ($origprio == 0) {
 
-print "# gotlower = $gotlower\n" if ($debug);
+  $gotlower = setpriority();
 
-# we must use getpriority() to find out whether setpriority() really worked
+  print "# gotlower = $gotlower ($!)\n" if ($debug);
 
-$lowerprio = getpriority();
+  # we must use getpriority() to find out whether setpriority() really worked
 
-print "# lowerprio = $lowerprio\n" if ($debug);
+  $lowerprio = getpriority();
 
-$fail = (not $gotlower or not $lowerprio == 10);
+  print "# lowerprio = $lowerprio\n" if ($debug);
 
-print 'not '
-  if ($fail);
-print "ok 2\n";
-if ($fail) {
-  print "# syserr = '$!' (",$!+0,"), ruid = $<, euid = $>\n";
-  print "# gotlower = $gotlower, lowerprio = $lowerprio\n";
+  $fail = (not $gotlower or not $lowerprio == 10);
+
+  print 'not '
+    if ($fail);
+  print "ok 2\n";
+  if ($fail) {
+    print "# syserr = '$!' (",$!+0,"), ruid = $<, euid = $>\n";
+    print "# gotlower = $gotlower, lowerprio = $lowerprio\n";
+  }
+} else {
+  print "ok 2 # skipped (origprio = $origprio)\n";
 }
 
 if ($> == 0) { # only effective uid root can even attempt this
@@ -56,13 +65,13 @@ if ($> == 0) { # only effective uid root can even attempt this
   $fail = (not $gothigher or not $higherprio == -5);
   print 'not '
     if ($fail);
+  if ($fail) {
+    print "# syserr = '$!' (",$!+0,"), ruid = $<, euid = $>\n";
+    print "# gothigher = $gothigher, higherprio = $higherprio\n";
+  }
+  print "ok 3 # (euid = $>) \n";
 } else {
-  $fail = 0;
-}
-print "ok 3\n";
-if ($fail) {
-  print "# syserr = '$!' (",$!+0,"), ruid = $<, euid = $>\n";
-  print "# gothigher = $gothigher, higherprio = $higherprio\n";
+  print "ok 3 # skipped (euid = $>)\n";
 }
 
 # eof

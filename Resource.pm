@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 use Carp;
 use AutoLoader;
@@ -461,10 +461,11 @@ to -20) and C<PRIO_MAX> is 39 (corresponding to 19, the BSD priority
 In B<HP-UX> the getrusage() is not Officially Supported at all but for
 the time being, it does seem to be.
 
-In Mac OS X 10.3.2 (and probably earlier) the t/setrlimit.t subtest #8
-will fail because of bug(s?) in the setrlimit/getrlimit functionality,
-setting/getting resource limits on the maximum number of processes
-(RLIM_NPROC) behaves nonsensically.  The bug has been reported to Apple.
+In Mac OS X releases from 10.3.2 (and probably earlier) to at least
+10.4.6 the t/setrlimit.t subtest #9 will fail because of bug(s?) in
+the setrlimit/getrlimit functionality, setting/getting resource limits
+on the maximum number of processes (RLIM_NPROC) behaves nonsensically.
+The bug has been reported to Apple.
 
 Because not all UNIX kernels are BSD and also because of the sloppy
 support of getrusage() by many vendors many of the getrusage() values

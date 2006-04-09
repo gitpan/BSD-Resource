@@ -4,7 +4,7 @@
 
 use BSD::Resource;
 
-$debug = 1;
+$debug = 0;
 
 $LIM = get_rlimits();
 
@@ -15,13 +15,22 @@ $LIM = get_rlimits();
 @test = ();
 
 sub newlim {
-  my $old = shift;
+  my ($oldlim, $oldhard) = @_;
 
-  return ($old == RLIM_INFINITY) ? $old : ($old ? int(0.95 * $old) : 1);
+  my $newlim =
+      ($oldlim == RLIM_INFINITY) ? $oldlim : $oldlim ? int(0.95 * $oldlim) : 1;
+  
+  # print "newlim/1 = $newlim\n";
+
+  $newlim = $oldhard if $oldhard > 0 && $newlim > $oldhard;
+
+  # print "newlim/2 = $newlim\n";
+
+  return $newlim;
 }
 
 sub klim {
-  print "# klim: $_[0]\n";
+  print "# klim: $_[0]\n" if ($debug);
   $_[0] =~ /^RLIM_(?:AS|CORE|DATA|MEMLOCK|RSS|STACK|VMEM)$/;
 }
 
@@ -35,8 +44,8 @@ sub test {
     ($oldsoft, $oldhard) = getrlimit($lim);
     print "# RLIM_INFINITY = ", RLIM_INFINITY, "\n" if ($debug);
     print "# lim = $lim, oldsoft = $oldsoft, oldhard = $oldhard\n" if ($debug);
-    $newsoft = newlim($oldsoft);
-    $newhard = newlim($oldhard);
+    $newsoft = newlim($oldsoft, $oldhard);
+    $newhard = newlim($oldhard, $oldhard);
     print "# lim = $lim, newsoft = $newsoft, newhard = $newhard\n" if ($debug);
     $set = setrlimit($lim, $newsoft, $newhard);
     $ser = $!;
@@ -62,7 +71,14 @@ if (@test) {
   print "1..$ntest\n";
   for $i (1..$ntest) {
     print 'not ' if $test[$i-1];
-    print "ok $i\n";
+    print "ok $i # $LIM[$i-1]\n";
+    if ($^O eq 'darwin' && $LIM[$i-1] eq 'RLIMIT_NPROC') {
+	if ($test[$i-1]) {
+	    print STDERR "# The RLIMIT_NPROC test is known to fail in Mac OS X.\n";
+	} else {
+	    print STDERR "\n# HEY! The RLIMIT_NPROC test unexpectedly succeeded in Mac OS X,\n# please let jhi\@iki.fi know!\n";
+	}
+    }
   }
 } else {
   die "could not find any resource limits to test\n";
