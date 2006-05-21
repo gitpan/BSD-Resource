@@ -70,15 +70,16 @@ if (@test) {
   $ntest = scalar @test;
   print "1..$ntest\n";
   for $i (1..$ntest) {
-    print 'not ' if $test[$i-1];
-    print "ok $i # $LIM[$i-1]\n";
+    my $ok = !$test[$i-1];
     if ($^O eq 'darwin' && $LIM[$i-1] eq 'RLIMIT_NPROC') {
+	$ok = 1;
 	if ($test[$i-1]) {
 	    print STDERR "# The RLIMIT_NPROC test is known to fail in Mac OS X.\n";
 	} else {
-	    print STDERR "\n# HEY! The RLIMIT_NPROC test unexpectedly succeeded in Mac OS X,\n# please let jhi\@iki.fi know!\n";
+	    print STDERR "\n# The RLIMIT_NPROC test seems to work this time in Mac OS X.\n";
 	}
     }
+    printf "%s $i # $LIM[$i-1]\n", $ok ? "ok" : "not ok";
   }
 } else {
   die "could not find any resource limits to test\n";

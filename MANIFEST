@@ -6,6 +6,8 @@ t/getrusage.t
 t/getrlimit.t
 t/setrlimit.t
 t/getpriority.t
+t/pod.t
+t/pod-coverage.t
 t/setpriority.t
 t/times.t
 README

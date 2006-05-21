@@ -1,3 +1,17 @@
+2006-05-21  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Address rt.cpan.org #19298: bug in getrusage(): 'inblock' was
+	  misspelt as 'inlock' (the end result being that people looking
+	  for the 'inblock' field got zero)
+	  
+	* For Mac OS X reword the message about the RLIM_NPROC test failure
+	  (or rather, the possible failure).  Still a mystery under what
+	  exact conditions the test fails or succeeds.
+	  
+	* Add Test::Pod and Test::Pod::Coverage tests.
+	
+	* Release 1.26.
+
 2006-04-09  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Address rt.cpan.org #13131: setrlimit.t tries to increase hard

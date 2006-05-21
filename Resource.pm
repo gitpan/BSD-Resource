@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.25';
+$VERSION = '1.26';
 
 use Carp;
 use AutoLoader;
@@ -464,8 +464,9 @@ the time being, it does seem to be.
 In Mac OS X releases from 10.3.2 (and probably earlier) to at least
 10.4.6 the t/setrlimit.t subtest #9 will fail because of bug(s?) in
 the setrlimit/getrlimit functionality, setting/getting resource limits
-on the maximum number of processes (RLIM_NPROC) behaves nonsensically.
-The bug has been reported to Apple.
+on the maximum number of processes (RLIM_NPROC) behaves nonsensically
+(sometimes it works, sometimes it doesn't).  The bug has been reported
+to Apple.
 
 Because not all UNIX kernels are BSD and also because of the sloppy
 support of getrusage() by many vendors many of the getrusage() values
@@ -506,7 +507,7 @@ sub getrusage (;$) {
 	my $key;
 
 	for $key (qw(utime stime maxrss ixrss idrss isrss minflt majflt nswap
-		     inlock oublock msgsnd msgrcv nsignals nvcsw nivcsw)) {
+		     inblock oublock msgsnd msgrcv nsignals nvcsw nivcsw)) {
 	    $rusage->{$key} = shift(@rusage);
 	}
 	
