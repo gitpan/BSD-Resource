@@ -1,3 +1,21 @@
+2006-05-26  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Tweak the regexp parsing the ps -o output in setpriority.t,
+	  from Alexey Tourbin and Rafael Garcia-Suarez.  Still just
+	  a best-effort attempt, but one can only try.
+
+	* Release 1.28.
+
+2006-05-25  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Address rt.cpan.org #13130 and #19412: try to cope with
+	  an already reniced shell running the setpriority.t.  The
+	  tricks used are trying "ps -o pid,nice" and looking for $$,
+	  and if that fails, then trying whether the nice(1) is the
+	  GNU one, and if so, running it without arguments.
+	
+	* Release 1.27.
+
 2006-05-21  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Address rt.cpan.org #19298: bug in getrusage(): 'inblock' was
