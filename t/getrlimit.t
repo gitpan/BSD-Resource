@@ -4,6 +4,8 @@
 
 use BSD::Resource;
 
+local $^W = 1;
+
 $debug = 1;
 
 $LIM = get_rlimits();
@@ -25,12 +27,9 @@ print "ok 1\n";
 $it = 2;
 
 for $lim (@k) {
-  print 'not ' unless (eval "getrlimit($lim)");
+  print 'not ' unless defined getrlimit($lim);
   print "ok $it\n";
   $it++;
 }
 
 # eof
-
-
-

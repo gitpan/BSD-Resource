@@ -1,5 +1,6 @@
 MANIFEST
 Makefile.PL
+ppport.h
 Resource.pm
 Resource.xs
 t/getrusage.t

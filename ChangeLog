@@ -1,7 +1,30 @@
+2008-01-27  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Rewrite the setrlimit.t test.  Simplify it a lot; now all
+	  RLIM_INFINITY limits are simply skipped; for those that
+	  are limited we try setting only the soft limit, and accept
+	  a value lower than we tried to set, since various systems
+	  might either enforce lower limits, or round up the limits.
+	  Added documentation on setrlimit() about this.
+	
+	* Allow calling getrlimit/setrlimit and getpriority/setpriority
+	  with the string names ("RLIMIT_NPROC", for example).
+
+	* Include ppport.h (generated with perl 5.8.8), reshuffle
+	  system header includes appropriately.
+
+	* Tested also with older Perls, 5.005_05 and 5.6.2, in OS X.
+	  (5.005_04 didn't work, it creates but then cannot dynaload
+	   the .bundle files, go figure.)
+	
+	* Minor documentation tweaks and copyright year bumps.
+	
+	* Release 1.29.
+
 2006-05-26  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Tweak the regexp parsing the ps -o output in setpriority.t,
-	  from Alexey Tourbin and Rafael Garcia-Suarez.  Still just
+	  from Alexey Tourbin and Rafael Garcia-Suarez.	 Still just
 	  a best-effort attempt, but one can only try.
 
 	* Release 1.28.
@@ -53,14 +76,14 @@ Sun Feb 29 16:51:34 2004  Jarkko Hietaniemi  <jhi@iki.fi>
 	
 	* Release 1.24.
 
-Tue Oct  7 21:54:04 2003  Jarkko Hietaniemi  <jhi@iki.fi>
+Tue Oct	 7 21:54:04 2003  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Makefile.PL: use archlibexp instead of archlib in cc -I.../CORE
 	  so that Perls installed under ~user work.
 
 	* Release 1.23.
 
-Sun Feb  9 12:12:42 2003  Jarkko Hietaniemi  <jhi@iki.fi>
+Sun Feb	 9 12:12:42 2003  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Add RLIMIT_LOCKS.
 
@@ -90,7 +113,7 @@ Tue Nov 26 04:20:38 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 Fri Nov 22 17:57:44 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Fixed a test problem found by Alain Barbet: in NetBSD
-	  the RLIMIT_STACK wants to be aligned.  Fixed also the
+	  the RLIMIT_STACK wants to be aligned.	 Fixed also the
 	  other memory-related limit tests to allow for alignment.
 
 	* Release 1.19.
@@ -100,7 +123,7 @@ Wed Nov 20 16:42:50 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 	* Problem found by Jeff Boes, forwarded and analyzed
 	  by Slaven Rezic: if one has a fast machine and/or
 	  the granularity of times() is low, one could get false
-	  negatives from far() in getrusage.t.  Fixed the same
+	  negatives from far() in getrusage.t.	Fixed the same
 	  problem in times.t.
 
 	* Bumped the copyright statement years.
@@ -130,7 +153,7 @@ Sun Sep 15 18:44:36 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 		
 	* Release 1.16.
 
-Thu May  9 04:18:09 2002  Jarkko Hietaniemi  <jhi@iki.fi>
+Thu May	 9 04:18:09 2002  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Add COPYRIGHT AND LICENSE to Resource.pm.
 
@@ -165,7 +188,7 @@ Fri Sep 28 05:35:16 2001  Jarkko Hietaniemi  <jhi@iki.fi>
 	  I was missing sub isrss().  My memory was jogged by
 	  a message from Jeff Boes ONE MONTH ago.  My apologies.
 
-Mon Mar  5 16:43:44 2001  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
+Mon Mar	 5 16:43:44 2001  Jarkko Hietaniemi  <jhi@alpha.hut.fi>
 
 	* Release 1.10.
 
@@ -204,10 +227,10 @@ Fri Jan 16 15:47:19 1998  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	  Added pseudo-times().
 
-    	  Major Solaris 5.[56] hackery to use the /proc.
+	  Major Solaris 5.[56] hackery to use the /proc.
 	  Don't know whether older Solarises work anymore :-/
 
-Mon Jun  2 13:32:54 1997  Jarkko Hietaniemi  <jhi@iki.fi>
+Mon Jun	 2 13:32:54 1997  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Release 1.06:
 
@@ -230,7 +253,7 @@ Sat Apr 26 21:10:00 1997  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	  Many thanks to
 
-	   	Dominic Dunlop		<domo@slipper.ip.lu>
+		Dominic Dunlop		<domo@slipper.ip.lu>
 
 
 	1) well, setrlimit() does not, at all, but this is
@@ -253,7 +276,7 @@ Tue Apr 08 01:27:33 1997  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	  Many thanks to
 
-	   	Jim Anderson		<jander@jander.com>
+		Jim Anderson		<jander@jander.com>
 		Ariel Faigon		<ariel@sgi.com>
 		Scott Henry		<scotth@sgi.com>
 		Brett M Hogden		<hogden@rge.com>

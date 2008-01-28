@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995-2003 Jarkko Hietaniemi. All rights reserved.
+ * Copyright (c) 1995-2008 Jarkko Hietaniemi. All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the same terms as Perl itself.
  *
@@ -7,20 +7,33 @@
  *
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-
-#if (PERL_VERSION < 4) || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4))
-#define PL_sv_undef sv_undef
-#define PL_sv_yes sv_yes
+#include "ppport.h"
+#ifdef WIN32
+# include <time.h>
+#else
+# include <sys/time.h>
+#endif
+#ifdef HAS_SELECT
+# ifdef I_SYS_SELECT
+#  include <sys/select.h>
+# endif
+#endif
+#ifdef __cplusplus
+}
 #endif
 
 #if defined(__hpux) && !defined(_INCLUDE_XOPEN_SOURCE_EXTENDED)
 #define _INCLUDE_XOPEN_SOURCE_EXTENDED
 #endif
 
-/* if this fails your vendor has failed you and Perl cannot help. */
+/* If this fails your vendor has failed you and Perl cannot help. */
 #include <sys/resource.h>
 
 #if defined(__sun__) && defined(__svr4__) && !defined(SOLARIS_NO_PROCFS)
@@ -64,14 +77,6 @@
 #   define SOLARIS
 #   undef SOLARIS_PROCFS
 #   define TRY_GETRUSAGE_SYS_SYSCALL
-#endif
-
-#ifdef I_SYS_TIME
-#   include <sys/time.h>
-#endif
-
-#ifdef I_SYS_SELECT
-#   include <sys/select.h>	/* struct timeval might be hidden in here */
 #endif
 
 #ifndef part_of_sec
@@ -703,6 +708,22 @@ _get_rlimits()
 #endif
 #if defined(RLIMIT_VMEM) || defined(HAS_RLIMIT_VMEM)
 	hv_store(RETVAL, "RLIMIT_VMEM"     , 11, newSViv(RLIMIT_VMEM),     0);
+#endif
+    OUTPUT:
+	RETVAL
+
+HV *
+_get_prios()
+    CODE:
+	RETVAL = newHV();
+#if defined(PRIO_PROCESS)
+	hv_store(RETVAL, "PRIO_PROCESS", 12, newSViv(PRIO_PROCESS), 0);
+#endif
+#if defined(PRIO_PGRP)
+	hv_store(RETVAL, "PRIO_PGRP", 9, newSViv(PRIO_PGRP), 0);
+#endif
+#if defined(PRIO_USER)
+	hv_store(RETVAL, "PRIO_USER", 9, newSViv(PRIO_USER), 0);
 #endif
     OUTPUT:
 	RETVAL

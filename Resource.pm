@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1995-2004 Jarkko Hietaniemi. All rights reserved.
+# Copyright (c) 1995-2008 Jarkko Hietaniemi. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 use Carp;
 use AutoLoader;
@@ -176,10 +176,10 @@ I<terminated> (either successfully or unsuccessfully) child processes:
 there is no way to find out information about child processes still
 running.
 
-On some systems (those supporting both getrusage() and the POSIX
-threads) there is also C<RUSAGE_THREAD>. The BSD::Resource supports the
-C<RUSAGE_THREAD> if it is present but understands nothing more about the
-POSIX threads themselves.  Similarly for C<RUSAGE_BOTH>: some systems
+On some systems (those supporting both getrusage() with the POSIX
+threads) there can also be C<RUSAGE_THREAD>. The BSD::Resource supports
+the C<RUSAGE_THREAD> if it is present but understands nothing more about
+the POSIX threads themselves.  Similarly for C<RUSAGE_BOTH>: some systems
 support retrieving the sums of the self and child resource consumptions
 simultaneously.
 
@@ -275,7 +275,7 @@ Two meta-resource-symbols might exist
 C<RLIM_NLIMITS> being the number of possible (but not necessarily fully
 supported) resource limits, see also the get_rlimits() call below.
 C<RLIM_INFINITY> is useful in setrlimit(), the C<RLIM_INFINITY> is
-represented as -1.
+often represented as minus one (-1).
 
 In list context C<getrlimit()> returns the current soft and hard resource
 limits as a list.  On failure it returns an empty list.
@@ -325,7 +325,7 @@ PRIO_PROCESS (a process) C<PRIO_USER> (a user), or C<PRIO_PGRP> (a
 process group). The $pr_who argument tells which process/user/process
 group, 0 signifying the current one.
 
-Usual values for C<PRIO_MIN>, C<PRIO_MAX>, are -20, 20. A negative
+Usual values for C<PRIO_MIN>, C<PRIO_MAX>, are -20, 20.  A negative
 value means better priority (more impolite process), a positive value
 means worse priority (more polite process).
 
@@ -339,6 +339,18 @@ B<NOTE>: A normal user process can only lower its resource limits.
 Soft or hard limit C<RLIM_INFINITY> means as much as possible, the
 real hard limits are normally buried inside the kernel and are B<very>
 system-dependent.
+
+B<NOTE>: Even the soft limit that is actually set might be lower than
+what requested for various reasons.  One possibility is that the
+actual limit on a resource might be controlled by some system variable
+(e.g. in BSD systems the RLIMIT_NPROC can be capped by the system
+variable C<maxprocperuid>, try C<sysctl -a kern.maxprocperuid>),
+or in many environments core dumping has been disabled from normal
+user processes.  Another possibility is that a limit is rounded down
+to some alignment or granularity, for example the memory limits might
+be rounded down to the closest 4 kilobyte boundary.  In other words,
+do not expect to be able to setrlimit() a limit to a value and then be
+able to read back the same value with getrlimit().
 
 =head2 setpriority
 
@@ -356,7 +368,7 @@ system-dependent.
 
 	$success = setpriority($pr_which);
 
-	# The $pr_which defaults to PRIO_PROCESS, 
+	# The $pr_which defaults to PRIO_PROCESS.
 
 	$success = setpriority();
 
@@ -417,20 +429,6 @@ The code tried to call getrlimit/setrlimit for a resource limit that
 your operating system vendor/supplier does not support.  Portable code
 should use get_rlimits() to check which resource limits are defined.
 
-=item *
-
-	use PRIO..., not "PRIO_..."
-
-getpriority() and setpriority() use symbolic names, not strings,
-for the constants.
-
-=item *
-
-	use RLIMIT..., not "RLIMIT_..."
-
-getrlimit() and setrlimit() use symbolic names, not strings,
-for the constants.
-
 =back
 
 =head1 EXAMPLES
@@ -452,21 +450,18 @@ for the constants.
 
 =head1 KNOWN ISSUES
 
-In B<AIX> if the BSD compatibility library is not installed or not
-found by the BSD::Resource installation procedure and when using the
-getpriority() or setpriority(), the C<PRIO_MIN> is 0 (corresponding
-to -20) and C<PRIO_MAX> is 39 (corresponding to 19, the BSD priority
-20 is unreachable).
+In B<AIX> (at least version 3, maybe later also releases) if the BSD
+compatibility library is not installed or not found by the BSD::Resource
+installation procedure and when using the getpriority() or setpriority(),
+the C<PRIO_MIN> is 0 (corresponding to -20) and C<PRIO_MAX> is 39
+(corresponding to 19, the BSD priority 20 is unreachable).
 
 In B<HP-UX> the getrusage() is not Officially Supported at all but for
 the time being, it does seem to be.
 
-In Mac OS X releases from 10.3.2 (and probably earlier) to at least
-10.4.6 the t/setrlimit.t subtest #9 will fail because of bug(s?) in
-the setrlimit/getrlimit functionality, setting/getting resource limits
-on the maximum number of processes (RLIM_NPROC) behaves nonsensically
-(sometimes it works, sometimes it doesn't).  The bug has been reported
-to Apple.
+In Mac OS X a normal user cannot raise the RLIM_NPROC over the
+maxprocperuid limit (the default value is 266, try the command
+C<sysctl -a kern.maxprocperuid>).
 
 Because not all UNIX kernels are BSD and also because of the sloppy
 support of getrusage() by many vendors many of the getrusage() values
@@ -475,15 +470,15 @@ C<E<lt>sys/rusage.hE<gt>> that the C<ixrss> and the C<isrss> fields
 are always zero.  In B<SunOS 5.5 and 5.6> the getrusage() leaves most
 of the fiels zero and therefore getrusage() is not even used, instead
 of that the B</proc> interface is used.  The mapping is not perfect:
-the maxrss field is really the B<current> resident size instead of the
-maximum, the idrss is really the B<current> heap size instead of the
-integral data, and the isrss is really the B<current> stack size
+the C<maxrss> field is really the B<current> resident size instead of the
+maximum, the C<idrss> is really the B<current> heap size instead of the
+integral data, and the C<isrss> is really the B<current> stack size
 instead of the integral stack.  The ixrss has no sensible counterpart
 at all so it stays zero.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1995-2004 Jarkko Hietaniemi All Rights Reserved
+Copyright 1995-2008 Jarkko Hietaniemi All Rights Reserved
 
 This library is free software; you may redistribute it and/or modify
 it under the same terms as Perl itself.
@@ -537,21 +532,46 @@ sub nsignals { _g($_[0], 'nsignals') }
 sub nvcsw    { _g($_[0], 'nvcsw'   ) }
 sub nivcsw   { _g($_[0], 'nivcsw'  ) }
 
+sub _find_rlimit ($$) {
+    my ($func, $lim) = @_;
+    if ($lim =~ /^RLIMIT_/) {
+	my $rlimits = get_rlimits();
+	if (exists $rlimits->{$lim}) {
+	    $lim = $rlimits->{$lim};
+	}
+    }
+    if ($lim =~ /^\d+$/) {
+	# Looks fine.
+    } else {
+	croak "$func: Unknown limit '$lim'";
+    }
+    return $lim;
+}
+
+sub _find_prio ($$) {
+    my ($func, $lim) = @_;
+    if ($lim =~ /^PRIO_/) {
+	my $prios = get_prios();
+	if (exists $prios->{$lim}) {
+	    $lim = $prios->{$lim};
+	}
+    }
+    if ($lim =~ /^\d+$/) {
+	# Looks fine.
+    } else {
+	croak "$func: Unknown limit '$lim'";
+    }
+    return $lim;
+}
+
 sub getrlimit ($) {
-    croak 'getrlimit: use RLIMIT_..., not "RLIMIT_..."' if $_[0] =~ /^RLIMIT_/;
-    my @rlimit = _getrlimit($_[0]);
+    my $lim = _find_rlimit('getrlimit', $_[0]);
+    my @rlimit = _getrlimit($lim);
 
     if (wantarray) {
-	@rlimit;
+	return @rlimit;
     } else {
-	my $rlimit = {};
-	my $key;
-
-	for $key (qw(soft hard)) {
-	    $rlimit->{$key} = shift(@rlimit);
-	}
-
-	bless $rlimit;
+	return $rlimit[0];
     }
 }
 
@@ -562,21 +582,44 @@ sub get_rlimits () {
     _get_rlimits();
 }
 
+sub get_prios () {
+    _get_prios();
+}
+
 sub getpriority (;$$) {
-    croak 'setpriority: use PRIO_..., not "PRIO_..."'
-	if @_ && $_[0] =~ /^PRIO_/;
-    _getpriority(@_);
+    my ($which, $who) = @_;
+    if (@_) {
+	$which = _find_prio('getpriority', $which);
+    }
+    if (@_ == 2) {
+	_getpriority($which, $who);
+    } elsif (@_ == 1) {
+	_getpriority($which);
+    } else {
+	_getpriority();
+    }
 }
 
 sub setrlimit ($$$) {
-    croak 'setrlimit: use RLIMIT_..., not "RLIMIT_..."' if $_[0] =~ /^RLIMIT_/;
-    _setrlimit($_[0], $_[1], $_[2]);
+    my ($lim, $soft, $hard) = @_;
+    $lim = _find_rlimit('setrlimit', $lim);
+    _setrlimit($lim, $soft, $hard);
 }
 
 sub setpriority (;$$$) {
-    croak 'setpriority: use PRIO_..., not "PRIO_..."'
-	if @_ && $_[0] =~ /^PRIO_/;
-    _setpriority(@_);
+    my ($which, $who, $prio) = @_;
+    if (@_) {
+	$which = _find_prio('setpriority', $which);
+    }
+    if (@_ == 3) {
+	_setpriority($which, $who, $prio);
+    } elsif (@_ == 2) {
+	_setpriority($which, $who);
+    } elsif (@_ == 1) {
+	_setpriority($which);
+    } else {
+	_setpriority();
+    }
 }
 
 sub times {
