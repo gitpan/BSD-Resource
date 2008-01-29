@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.29';
+$VERSION = '1.2901';
 
 use Carp;
 use AutoLoader;
@@ -462,6 +462,8 @@ the time being, it does seem to be.
 In Mac OS X a normal user cannot raise the RLIM_NPROC over the
 maxprocperuid limit (the default value is 266, try the command
 C<sysctl -a kern.maxprocperuid>).
+
+In NetBSD Alpha RLIMIT_STACK calls fail.
 
 Because not all UNIX kernels are BSD and also because of the sloppy
 support of getrusage() by many vendors many of the getrusage() values

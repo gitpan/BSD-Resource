@@ -14,6 +14,10 @@ my $test_no = 1;
 
 for my $lim (@LIM) {
     print "# lim = $lim\n";
+    if ($^O eq 'netbsd-alpha' && $lim eq 'RLIMIT_STACK') {
+	print "ok $test_no # SKIP $^O $lim\n";
+        next;
+    }
     my ($old_soft, $old_hard) = getrlimit($lim);
     print "# old_soft = $old_soft, old_hard = $old_hard\n";
     my ($try_soft,  $try_hard ) =

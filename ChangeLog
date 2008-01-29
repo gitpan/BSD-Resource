@@ -1,3 +1,11 @@
+2008-01-29  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* netbsd-alpha does not have a functional RLIMIT_STACK,
+	  reported by David Cantrell.  Skip the test, and document
+	  as a known issue.
+	
+	* Release 1.2901.
+
 2008-01-27  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Rewrite the setrlimit.t test.  Simplify it a lot; now all
