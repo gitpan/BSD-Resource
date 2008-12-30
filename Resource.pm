@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.2901';
+$VERSION = '1.2902';
 
 use Carp;
 use AutoLoader;
@@ -277,8 +277,8 @@ supported) resource limits, see also the get_rlimits() call below.
 C<RLIM_INFINITY> is useful in setrlimit(), the C<RLIM_INFINITY> is
 often represented as minus one (-1).
 
-In list context C<getrlimit()> returns the current soft and hard resource
-limits as a list.  On failure it returns an empty list.
+In list context C<getrlimit()> returns the current soft and hard
+resource limits as a list.  On failure it returns an empty list.
 
 Processes have soft and hard resource limits.  On crossing the soft
 limit they receive a signal (for example the C<SIGXCPU> or C<SIGXFSZ>,
@@ -298,10 +298,8 @@ Again, please consult your usual C programming documentation.
 One notable exception for the better: officially B<HP-UX> does not
 support getrlimit() at all but for the time being, it does seem to.
 
-In scalar context getrlimit() returns the current soft and hard
-resource limits as an object. The object can be queried via methods
-C<cur> and C<max>, the current and maximum resource limits for the
-C<$resource>, respectively.
+In scalar context C<getrlimit()> returns the current soft limit.
+On failure it returns C<undef>.
 
 =head2 getpriority
 
@@ -463,7 +461,7 @@ In Mac OS X a normal user cannot raise the RLIM_NPROC over the
 maxprocperuid limit (the default value is 266, try the command
 C<sysctl -a kern.maxprocperuid>).
 
-In NetBSD Alpha RLIMIT_STACK calls fail.
+In NetBSD RLIMIT_STACK calls fail.
 
 Because not all UNIX kernels are BSD and also because of the sloppy
 support of getrusage() by many vendors many of the getrusage() values

@@ -14,14 +14,15 @@ my $test_no = 1;
 
 for my $lim (@LIM) {
     print "# lim = $lim\n";
-    if ($^O eq 'netbsd-alpha' && $lim eq 'RLIMIT_STACK') {
+    if ($^O =~ /^netbsd/ && $lim eq 'RLIMIT_STACK') {
 	print "ok $test_no # SKIP $^O $lim\n";
         next;
     }
     my ($old_soft, $old_hard) = getrlimit($lim);
     print "# old_soft = $old_soft, old_hard = $old_hard\n";
     my ($try_soft,  $try_hard ) =
-	map { ($_ == RLIM_INFINITY) ? RLIM_INFINITY : int(0.95 * $_) }
+	map { ($_ == RLIM_INFINITY) ?
+	      RLIM_INFINITY : int(0.75 * $_) }
             ($old_soft, $old_hard);
     print "# try_soft = $try_soft, try_hard = $try_hard\n";
     if ($try_soft == RLIM_INFINITY) {
@@ -32,6 +33,7 @@ for my $lim (@LIM) {
 	    print "# setrlimit($lim, $try_soft) = OK\n";
 	    my $new_soft = getrlimit($lim);
 	    print "# getrlimit($lim) = $new_soft\n";
+	    # ASSUMPTION: setrlimit() requests are rounded DOWN, not up.
 	    if (($new_soft > 0 || $old_soft == 0) && $new_soft <= $try_soft) {
 		print "ok $test_no # $try_soft <= $new_soft\n";
 	    } else {

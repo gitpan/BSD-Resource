@@ -1,3 +1,20 @@
+2008-12-30  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Lowered the "0.95 of the current limit" down to
+	  "0.75 of the current limit" in setrlimit.t so that
+	  more memory-constrained systems (like 2MB or less of
+	  default stack) have slightly more chance of completing the test.
+	  The 0.75 also has more chance of aligning with page sizes.
+	
+	* The scalar context return of getrlimit() was documented
+	  to return an object, even though it really returned the
+	  soft limit, reported by anicka@suse.cz.  Fixed the documentation.
+	
+	* Judging by the cpantesters reports no netbsd has a functional
+	  RLIMIT_STACK, so skipping the test in all of them.
+	
+	* Release 1.2902.
+
 2008-01-29  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* netbsd-alpha does not have a functional RLIMIT_STACK,
