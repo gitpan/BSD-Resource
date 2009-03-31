@@ -60,9 +60,9 @@ sub try_compile_and_link {
 		$ok = -s "$tmp.o";
 		$CC = $cc;
 	    }
-	    unlink("$tmp.c", "$tmp.o");
 	    last if $ok;
 	}
+	unlink("$tmp.c", "$tmp.o");
     }
     
     return $ok;

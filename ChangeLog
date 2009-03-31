@@ -1,3 +1,11 @@
+2009-03-31  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Address rt.cpan.org #44082:
+	  "Bug in compiler detection (Makefile.PL)" (for AIX xlc)
+	  Patch submitted in the report by rehsack at cpan.org.
+	
+	* Release 1.2903.
+
 2008-12-30  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Lowered the "0.95 of the current limit" down to
