@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1995-2008 Jarkko Hietaniemi. All rights reserved.
+# Copyright (c) 1995-2010 Jarkko Hietaniemi. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.2903';
+$VERSION = '1.2904';
 
 use Carp;
 use AutoLoader;
@@ -403,17 +403,25 @@ B<NOTE: times() is not a "real BSD" function.  It is older UNIX.>
 
 =head2 get_rlimits
 
-	$rlimits = get_rlimits();
+	use BSD::Resource qw{get_rlimits};
+	my $limits = get_rlimits();
 
-B<NOTE: This is not a real BSD function. It is a convenience function.>
+B<NOTE: This is not a real BSD function. It is a convenience function
+introduced by BSD::Resource.>
 
 get_rlimits() returns a reference to hash which has the names of the
 available resource limits as keys and their indices (those which
 are needed as the first argument to getrlimit() and setrlimit())
 as values. For example:
 
-	$r = get_rlimits();
-	print "ok.\n" if ($r->{'RLIM_STACK'} == RLIM_STACK);
+	use BSD::Resource qw{get_rlimits};
+	my $limits = get_rlimits();
+	for my $name (keys %$limits) {
+	  my ($soft, $hard) = BSD::Resource::getrlimit($limits->{$name});
+	  print "$name soft $soft hard $hard\n";
+	}
+
+Note that a limit of -1 means unlimited.
 
 =head1 ERRORS
 
@@ -478,7 +486,7 @@ at all so it stays zero.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1995-2008 Jarkko Hietaniemi All Rights Reserved
+Copyright 1995-2010 Jarkko Hietaniemi All Rights Reserved
 
 This library is free software; you may redistribute it and/or modify
 it under the same terms as Perl itself.

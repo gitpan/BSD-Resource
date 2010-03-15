@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995-2008 Jarkko Hietaniemi. All rights reserved.
+ * Copyright (c) 1995-2010 Jarkko Hietaniemi. All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the same terms as Perl itself.
  *
@@ -658,6 +658,7 @@ HV *
 _get_rlimits()
     CODE:
 	RETVAL = newHV();
+	sv_2mortal((SV*)RETVAL);
 #if defined(RLIMIT_AIO_MEM) || defined(HAS_RLIMIT_AIO_MEM)
 	hv_store(RETVAL, "RLIMIT_AIO_MEM"  , 14, newSViv(RLIMIT_AIO_MEM),  0);
 #endif
@@ -716,6 +717,7 @@ HV *
 _get_prios()
     CODE:
 	RETVAL = newHV();
+	sv_2mortal((SV*)RETVAL);
 #if defined(PRIO_PROCESS)
 	hv_store(RETVAL, "PRIO_PROCESS", 12, newSViv(PRIO_PROCESS), 0);
 #endif

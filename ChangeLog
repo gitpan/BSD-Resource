@@ -1,3 +1,11 @@
+2010-03-14  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Address rt.cpan.org #53856: memory leak in get_rlimits()
+
+	* Address rt.cpan.org #53859: clarify get_rlimits() docs
+	
+	* Release 1.2904.
+
 2009-03-31  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Address rt.cpan.org #44082:
@@ -33,7 +41,7 @@
 
 2008-01-27  Jarkko Hietaniemi  <jhi@iki.fi>
 
-	* Rewrite the setrlimit.t test.  Simplify it a lot; now all
+	* Rewrite the setrlimit.t test.	 Simplify it a lot; now all
 	  RLIM_INFINITY limits are simply skipped; for those that
 	  are limited we try setting only the soft limit, and accept
 	  a value lower than we tried to set, since various systems
