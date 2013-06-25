@@ -3,6 +3,7 @@ Makefile.PL
 ppport.h
 Resource.pm
 Resource.xs
+t/burn.pl
 t/getrusage.t
 t/getrlimit.t
 t/setrlimit.t
@@ -15,3 +16,4 @@ README
 ChangeLog
 INSTALL
 META.yml                                 Module meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

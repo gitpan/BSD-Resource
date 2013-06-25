@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995-2010 Jarkko Hietaniemi. All rights reserved.
+ * Copyright (c) 1995-2013 Jarkko Hietaniemi. All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the same terms as Perl itself.
  *
@@ -660,55 +660,55 @@ _get_rlimits()
 	RETVAL = newHV();
 	sv_2mortal((SV*)RETVAL);
 #if defined(RLIMIT_AIO_MEM) || defined(HAS_RLIMIT_AIO_MEM)
-	hv_store(RETVAL, "RLIMIT_AIO_MEM"  , 14, newSViv(RLIMIT_AIO_MEM),  0);
+	(void)hv_store(RETVAL, "RLIMIT_AIO_MEM"  , 14, newSViv(RLIMIT_AIO_MEM),  0);
 #endif
 #if defined(RLIMIT_AIO_OPS) || defined(HAS_RLIMIT_AIO_OPS)
-	hv_store(RETVAL, "RLIMIT_AIO_OPS"  , 14, newSViv(RLIMIT_AIO_OPS),  0);
+	(void)hv_store(RETVAL, "RLIMIT_AIO_OPS"  , 14, newSViv(RLIMIT_AIO_OPS),  0);
 #endif
 #if defined(RLIMIT_AS) || defined(HAS_RLIMIT_AS)
-	hv_store(RETVAL, "RLIMIT_AS"       ,  9, newSViv(RLIMIT_AS),       0);
+	(void)hv_store(RETVAL, "RLIMIT_AS"       ,  9, newSViv(RLIMIT_AS),       0);
 #endif
 #if defined(RLIMIT_CORE) || defined(HAS_RLIMIT_CORE)
-	hv_store(RETVAL, "RLIMIT_CORE"     , 11, newSViv(RLIMIT_CORE),     0);
+	(void)hv_store(RETVAL, "RLIMIT_CORE"     , 11, newSViv(RLIMIT_CORE),     0);
 #endif
 #if defined(RLIMIT_CPU) || defined(HAS_RLIMIT_CPU)
-	hv_store(RETVAL, "RLIMIT_CPU"      , 10, newSViv(RLIMIT_CPU),      0);
+	(void)hv_store(RETVAL, "RLIMIT_CPU"      , 10, newSViv(RLIMIT_CPU),      0);
 #endif
 #if defined(RLIMIT_DATA) || defined(HAS_RLIMIT_DATA)
-	hv_store(RETVAL, "RLIMIT_DATA"     , 11, newSViv(RLIMIT_DATA),     0);
+	(void)hv_store(RETVAL, "RLIMIT_DATA"     , 11, newSViv(RLIMIT_DATA),     0);
 #endif
 #if defined(RLIMIT_FSIZE) || defined(HAS_RLIMIT_FSIZE)
-	hv_store(RETVAL, "RLIMIT_FSIZE"    , 12, newSViv(RLIMIT_FSIZE),    0);
+	(void)hv_store(RETVAL, "RLIMIT_FSIZE"    , 12, newSViv(RLIMIT_FSIZE),    0);
 #endif
 #if defined(RLIMIT_LOCKS) || defined(HAS_RLIMIT_LOCKS)
 	hv_store(RETVAL, "RLIMIT_LOCKS"    , 12, newSViv(RLIMIT_LOCKS),    0);
 #endif
 #if defined(RLIMIT_MEMLOCK) || defined(HAS_RLIMIT_MEMLOCK)
-	hv_store(RETVAL, "RLIMIT_MEMLOCK"  , 14, newSViv(RLIMIT_MEMLOCK),  0);
+	(void)hv_store(RETVAL, "RLIMIT_MEMLOCK"  , 14, newSViv(RLIMIT_MEMLOCK),  0);
 #endif
 #if defined(RLIMIT_NOFILE) || defined(HAS_RLIMIT_NOFILE)
-	hv_store(RETVAL, "RLIMIT_NOFILE"   , 13, newSViv(RLIMIT_NOFILE),   0);
+	(void)hv_store(RETVAL, "RLIMIT_NOFILE"   , 13, newSViv(RLIMIT_NOFILE),   0);
 #endif
 #if defined(RLIMIT_NPROC) || defined(HAS_RLIMIT_NPROC)
-	hv_store(RETVAL, "RLIMIT_NPROC"    , 12, newSViv(RLIMIT_NPROC),    0);
+	(void)hv_store(RETVAL, "RLIMIT_NPROC"    , 12, newSViv(RLIMIT_NPROC),    0);
 #endif
 #if defined(RLIMIT_OFILE) || defined(HAS_RLIMIT_OFILE)
-	hv_store(RETVAL, "RLIMIT_OFILE"    , 12, newSViv(RLIMIT_OFILE),    0);
+	(void)hv_store(RETVAL, "RLIMIT_OFILE"    , 12, newSViv(RLIMIT_OFILE),    0);
 #endif
 #if defined(RLIMIT_OPEN_MAX) || defined(HAS_RLIMIT_OPEN_MAX)
-	hv_store(RETVAL, "RLIMIT_OPEN_MAX" , 15, newSViv(RLIMIT_OPEN_MAX), 0);
+	(void)hv_store(RETVAL, "RLIMIT_OPEN_MAX" , 15, newSViv(RLIMIT_OPEN_MAX), 0);
 #endif
 #if defined(RLIMIT_RSS) || defined(HAS_RLIMIT_RSS)
-	hv_store(RETVAL, "RLIMIT_RSS"      , 10, newSViv(RLIMIT_RSS),      0);
+	(void)hv_store(RETVAL, "RLIMIT_RSS"      , 10, newSViv(RLIMIT_RSS),      0);
 #endif
 #if defined(RLIMIT_STACK) || defined(HAS_RLIMIT_STACK)
-	hv_store(RETVAL, "RLIMIT_STACK"    , 12, newSViv(RLIMIT_STACK),    0);
+	(void)hv_store(RETVAL, "RLIMIT_STACK"    , 12, newSViv(RLIMIT_STACK),    0);
 #endif
 #if defined(RLIMIT_TCACHE) || defined(HAS_RLIMIT_TCACHE)
-	hv_store(RETVAL, "RLIMIT_TCACHE"   , 13, newSViv(RLIMIT_TCACHE),   0);
+	(void)hv_store(RETVAL, "RLIMIT_TCACHE"   , 13, newSViv(RLIMIT_TCACHE),   0);
 #endif
 #if defined(RLIMIT_VMEM) || defined(HAS_RLIMIT_VMEM)
-	hv_store(RETVAL, "RLIMIT_VMEM"     , 11, newSViv(RLIMIT_VMEM),     0);
+	(void)hv_store(RETVAL, "RLIMIT_VMEM"     , 11, newSViv(RLIMIT_VMEM),     0);
 #endif
     OUTPUT:
 	RETVAL
@@ -719,13 +719,13 @@ _get_prios()
 	RETVAL = newHV();
 	sv_2mortal((SV*)RETVAL);
 #if defined(PRIO_PROCESS)
-	hv_store(RETVAL, "PRIO_PROCESS", 12, newSViv(PRIO_PROCESS), 0);
+	(void)hv_store(RETVAL, "PRIO_PROCESS", 12, newSViv(PRIO_PROCESS), 0);
 #endif
 #if defined(PRIO_PGRP)
-	hv_store(RETVAL, "PRIO_PGRP", 9, newSViv(PRIO_PGRP), 0);
+	(void)hv_store(RETVAL, "PRIO_PGRP", 9, newSViv(PRIO_PGRP), 0);
 #endif
 #if defined(PRIO_USER)
-	hv_store(RETVAL, "PRIO_USER", 9, newSViv(PRIO_USER), 0);
+	(void)hv_store(RETVAL, "PRIO_USER", 9, newSViv(PRIO_USER), 0);
 #endif
     OUTPUT:
 	RETVAL

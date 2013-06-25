@@ -12,15 +12,9 @@ my $debug = 1;
 
 $| = 1 if ($debug);
 
-print "1..2\n";
+require "t/burn.pl";
 
-# burn some time and CPU
-
-my $t0 = time();
-while  (time() - $t0 < 5) {
-  for (1..1E4) { my $x = time() x $_ }
-  for (1..1E3) { mkdir "x", 0777; rmdir "x" }
-}
+burn();
 
 sleep(2);
 
@@ -34,6 +28,13 @@ if ($debug) {
     print "# BSD::Resource::times() = @t2\n";
 }
 
+if ($t0[0] < 0.5 || $t0[1] < 0.5) {
+    print "1..0 # SKIP Not enough user or system time accumulated for test\n";
+    exit;
+}
+
+print "1..2\n";
+
 sub far ($$$) {
   my ($a, $b, $r) = @_;
 
@@ -42,7 +43,7 @@ sub far ($$$) {
   $b == 0 ? 0 : (abs($a/$b-1) > $r);
 }
 
-print 'not ' if far($t1[0], $t0[0], 0.10) or
+print 'not ' if far($t1[0], $t0[0], 0.20) or
 	        far($t1[1], $t0[1], 0.50);
 print "ok 1\n";
 

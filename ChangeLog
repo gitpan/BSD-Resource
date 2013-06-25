@@ -1,3 +1,25 @@
+2013-06-22  Jarkko Hietaniemi  <jhi@Vredefort-2.local>
+
+	* Address rt.cpan.org #86334 for BSD-Resource: typo fixes
+	
+	* Address rt.cpan.org #62504 for BSD-Resource: Disable user/system
+	  timing tests if workload accumulate too little time
+
+	* Attempt harder in getrusage.t to burn enough user and system time,
+	  refactor the "burn some cpu" utility into t/burn.pl, use that also
+	  in t/times.t.
+	
+	* Fix a testing problem in NetBSD for t/setrlimit.t,
+	  the tests were misnumbered.
+	
+	* Silence compilation warnings coming from Perl 5.18.0.
+	
+	* Clarify the license to be Artistic 2.0 or LGPL 2.0.
+	
+	* Regenerate ppport.h with Perl 5.18.0.
+	
+	* Release 1.2905.
+
 2010-03-14  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Address rt.cpan.org #53856: memory leak in get_rlimits()

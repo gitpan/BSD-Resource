@@ -12,25 +12,13 @@ my $debug = 1;
 
 $| = 1 if ($debug);
 
-print "1..2\n";
-
 $time0 = time();
 
-# burn some time and CPU
+require "t/burn.pl";
 
-sub fac { $_[0] < 2 ? 1 : $_[0] * fac($_[0] - 1) }
+burn();
 
-my $t0 = time();
-while (time() - $t0 < 3) {
-  for (1..1E4) { my $x = time() x $_}
-  for (1..1E3) { mkdir "x", 0777; rmdir "x" }
-}
-
-fac(10);
-fac(15);
-fac(20);
-
-# we will compare the user/system times as returned by getrusage()
+# We will compare the user/system times as returned by getrusage()
 
 print "# getrusage\n" if ($debug);
 
@@ -38,13 +26,25 @@ print "# getrusage\n" if ($debug);
 
 print "# ru = @ru\n" if ($debug);
 
-# to the respective times returned by times() (if available)
+# To the respective times returned by times() (if available)
 
 print "# times\n" if ($debug);
 
 eval '($tsu, $tss) = times()';
 
 print "# tsu = $tsu, tss = $tss\n" if ($debug);
+
+print "@ru\n";
+
+if ($ru[0] < 0.5) {
+    print "1..0 # SKIP Not enough user time accumulated for test\n";
+    exit;
+}
+if ($ru[1] < 0.5) {
+    print "1..0 # SKIP Not system time accumulated for test\n";
+    exit;
+}
+print "1..2\n";
 
 # and to the real (wallclock) time returned by time()
 
@@ -91,13 +91,7 @@ print 'not '
       $ruc > $real);
 print "ok 1\n";
 
-# burn some time and CPU once more
-
-$t0 = time();
-while (time() - $t0 < 3) {
-  for (1..1E4) { my $x = time() x $_ }
-  for (1..1E3) { mkdir "x", 0777; rmdir "x" }
-}
+burn();
 
 $ru = getrusage();
 @ru = getrusage();

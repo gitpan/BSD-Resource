@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1995-2010 Jarkko Hietaniemi. All rights reserved.
+# Copyright (c) 1995-2013 Jarkko Hietaniemi. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.2904';
+$VERSION = '1.2905';
 
 use Carp;
 use AutoLoader;
@@ -264,7 +264,7 @@ The $resource argument can be one of
 B<What limits are available depends on the operating system>.
 See below for C<get_rlimits()> on how to find out which limits are
 available, for the exact documentation consult the documentation of
-your operatgiing system.  The two groups (C<NOFILE>, CC<OFILE>,
+your operating system.  The two groups (C<NOFILE>, CC<OFILE>,
 <OPEN_MAX>) and (C<AS>, C<VMEM>) are aliases within themselves.
 
 Two meta-resource-symbols might exist
@@ -372,7 +372,7 @@ able to read back the same value with getrlimit().
 
 setpriority() is used to change the scheduling priority.  A positive
 priority means a more polite process/process group/user; a negative
-priority means a more impoite process/process group/user.
+priority means a more impolite process/process group/user.
 The priorities handled by setpriority() are [C<PRIO_MIN>,C<PRIO_MAX>].
 A normal user process can only lower its priority (make it more positive).
 
@@ -476,7 +476,7 @@ support of getrusage() by many vendors many of the getrusage() values
 may not be correctly updated.  For example B<Solaris 1> claims in
 C<E<lt>sys/rusage.hE<gt>> that the C<ixrss> and the C<isrss> fields
 are always zero.  In B<SunOS 5.5 and 5.6> the getrusage() leaves most
-of the fiels zero and therefore getrusage() is not even used, instead
+of the fields zero and therefore getrusage() is not even used, instead
 of that the B</proc> interface is used.  The mapping is not perfect:
 the C<maxrss> field is really the B<current> resident size instead of the
 maximum, the C<idrss> is really the B<current> heap size instead of the
@@ -486,10 +486,13 @@ at all so it stays zero.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1995-2010 Jarkko Hietaniemi All Rights Reserved
+Copyright 1995-2013 Jarkko Hietaniemi All Rights Reserved
 
-This library is free software; you may redistribute it and/or modify
-it under the same terms as Perl itself.
+This module free software; you can redistribute it and/or modify it
+under the terms of the Artistic License 2.0 or GNU Lesser General
+Public License 2.0.  For more details, see the full text of the
+licenses at <http://www.perlfoundation.org/artistic_license_2_0>,
+and <http://www.gnu.org/licenses/gpl-2.0.html>.
 
 =head1 AUTHOR
 
