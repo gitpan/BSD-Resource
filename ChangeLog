@@ -1,4 +1,15 @@
-2013-06-22  Jarkko Hietaniemi  <jhi@Vredefort-2.local>
+2013-07-07  Jarkko Hietaniemi  <jhi@iki.fi>
+
+	* Skip number-of-files and stack setrlimit tests in Cygwin:
+	  the constants exist but the implementation doesn't really
+	  seem to be there.  Document this in the pod.  Testing by dsolimano.
+
+	* For setrlimit tests involving byte sizes (memory or file size)
+	  round the byte sizes down to 4 kB boundaries.
+
+	* Fix some pod nits.
+	
+2013-06-22  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Address rt.cpan.org #86334 for BSD-Resource: typo fixes
 	

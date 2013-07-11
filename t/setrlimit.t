@@ -14,7 +14,24 @@ my $test_no = 1;
 
 for my $lim (@LIM) {
     print "# lim = $lim\n";
-    if ($^O =~ /^netbsd/ && $lim eq 'RLIMIT_STACK') {
+    if ($^O =~ /^netbsd/ &&
+	$lim eq 'RLIMIT_STACK') {
+      # NetBSD:
+      # - RLIMIT_STACK exists, but setrlimit calls on it fail.
+      print "ok $test_no # SKIP $^O $lim\n";
+    } elsif ($^O =~ /^cygwin/ &&
+	     # Cygwin:
+	     # - NOFILE/OFILE/OPEN_MAX: setrlimit calls succeed,
+	     #   but then the subsequent getrlimit calls return
+	     #   the old value before the setrlimit call.  So the
+	     #   setrlimit seems to be faking its success.
+	     # - STACK: the soft values (which we use for testing)
+	     #   seem to be some strange portion of the hard value
+	     #   (which is 8MB, or 0x800000), namely 0x5fbf83 or
+	     #   0.748032 of the max.  And our tests tries to get
+	     #   0.75 of that, and trying to setrlimit that miserably
+	     #   fails.
+	     $lim =~ /^RLIMIT_(NOFILE|OFILE|OPEN_MAX|STACK)/) {
 	print "ok $test_no # SKIP $^O $lim\n";
     } else {
       my ($old_soft, $old_hard) = getrlimit($lim);
@@ -27,6 +44,14 @@ for my $lim (@LIM) {
       if ($try_soft == RLIM_INFINITY) {
 	print "ok $test_no # SKIP soft_limit == RLIM_INFINITY\n";
       } else {
+	if ($lim =~
+	    /^RLIMIT_(FSIZE|DATA|STACK|CORE|RSS|MEMLOCK|AS|VMEM|AIO_MEM)/) {
+	  my $n = 4096;
+	  print "# Rounding down to $n byte boundary\n";
+	  ($try_soft, $try_hard) =
+	    map { int($_ / $n) * $n } ($try_soft, $try_hard);
+	}
+	print "# try_soft = $try_soft, try_hard = $try_hard\n";
 	my $success = setrlimit($lim, $try_soft, $try_hard);
 	if ($success) {
 	  print "# setrlimit($lim, $try_soft) = OK\n";
@@ -36,10 +61,10 @@ for my $lim (@LIM) {
 	  if (($new_soft > 0 || $old_soft == 0) && $new_soft <= $try_soft) {
 	    print "ok $test_no # $try_soft <= $new_soft\n";
 	  } else {
-	    print "NOT ok $test_no # $try_soft > $new_soft\n";
+	    print "not ok $test_no # $try_soft > $new_soft\n";
 	  }
 	} else {
-	  print "NOT ok $test_no # setrlimit($lim, $try_soft, $try_hard) failed: $!\n";
+	  print "not ok $test_no # setrlimit($lim, $try_soft, $try_hard) failed: $!\n";
 	}
       }
     }

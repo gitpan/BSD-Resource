@@ -13,7 +13,7 @@ package BSD::Resource;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $AUTOLOAD $VERSION);
 
-$VERSION = '1.2905';
+$VERSION = '1.2906';
 
 use Carp;
 use AutoLoader;
@@ -264,8 +264,8 @@ The $resource argument can be one of
 B<What limits are available depends on the operating system>.
 See below for C<get_rlimits()> on how to find out which limits are
 available, for the exact documentation consult the documentation of
-your operating system.  The two groups (C<NOFILE>, CC<OFILE>,
-<OPEN_MAX>) and (C<AS>, C<VMEM>) are aliases within themselves.
+your operating system.  The two groups (C<NOFILE>, C<OFILE>,
+C<OPEN_MAX>) and (C<AS>, C<VMEM>) are aliases within themselves.
 
 Two meta-resource-symbols might exist
 
@@ -465,11 +465,16 @@ the C<PRIO_MIN> is 0 (corresponding to -20) and C<PRIO_MAX> is 39
 In B<HP-UX> the getrusage() is not Officially Supported at all but for
 the time being, it does seem to be.
 
-In Mac OS X a normal user cannot raise the RLIM_NPROC over the
+In B<Mac OS X> a normal user cannot raise the C<RLIM_NPROC> over the
 maxprocperuid limit (the default value is 266, try the command
 C<sysctl -a kern.maxprocperuid>).
 
-In NetBSD RLIMIT_STACK calls fail.
+In B<NetBSD> C<RLIMIT_STACK> setrlimit() calls fail.
+
+In B<Cygwin> C<RLIMIT_STACK> setrlimit calls fail.  Also, setrlimit()
+C<RLIMIT_NOFILE/RLIMIT_OFILE/RLIMIT_OFILE> calls return success, but
+then the subsequent getrlimit calls show that the limits didn't really
+change.
 
 Because not all UNIX kernels are BSD and also because of the sloppy
 support of getrusage() by many vendors many of the getrusage() values
