@@ -41,8 +41,13 @@ for my $lim (@LIM) {
 		RLIM_INFINITY : int(0.75 * $_) }
 	  ($old_soft, $old_hard);
       print "# try_soft = $try_soft, try_hard = $try_hard\n";
+      # If either the soft or the hard limit is the RLIM_INFINITY,
+      # don't bother testing because whether that succeeds depends
+      # on too many factors (which OS, which user).
       if ($try_soft == RLIM_INFINITY) {
 	print "ok $test_no # SKIP soft_limit == RLIM_INFINITY\n";
+      } elsif ($try_hard == RLIM_INFINITY) {
+	print "ok $test_no # SKIP hard_limit == RLIM_INFINITY\n";
       } else {
 	if ($lim =~
 	    /^RLIMIT_(FSIZE|DATA|STACK|CORE|RSS|MEMLOCK|AS|VMEM|AIO_MEM)/) {

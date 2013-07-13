@@ -1,3 +1,10 @@
+2013-07-12  Jarkko Hietaniemi  <jhi@Vredefort-2.local>
+
+	* Address rt.cpan.org #86857: t/setrlimit.t failure
+	  Skip setrlimit() tests also if the hard limit is RLIM_INFINITY.
+
+	* Release 1.2907.
+
 2013-07-07  Jarkko Hietaniemi  <jhi@iki.fi>
 
 	* Skip number-of-files and stack setrlimit tests in Cygwin:
@@ -9,11 +16,13 @@
 
 	* Fix some pod nits.
 	
+	* Release 1.2906.
+
 2013-06-22  Jarkko Hietaniemi  <jhi@iki.fi>
 
-	* Address rt.cpan.org #86334 for BSD-Resource: typo fixes
+	* Address rt.cpan.org #86334: typo fixes
 	
-	* Address rt.cpan.org #62504 for BSD-Resource: Disable user/system
+	* Address rt.cpan.org #62504: Disable user/system
 	  timing tests if workload accumulate too little time
 
 	* Attempt harder in getrusage.t to burn enough user and system time,
